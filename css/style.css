@@ -1,0 +1,63 @@
+/*
+  Based on Arc90 Lab's Readability CSS
+  http://lab.arc90.com/experiments/readability/css/readability.css
+  
+  Used under the terms of the Creative Commons Attribution License 2.5
+  http://creativecommons.org/licenses/by/2.5/
+*/
+
+#outer {
+  display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 250000;
+	width: 100%;
+}
+
+#inner {
+  text-align: left;
+	line-height: 1.4em;	
+	margin: 1em auto;
+	max-width: 800px;
+}
+
+#inner a {
+  color: blue;
+	text-decoration: underline; 
+}
+
+#inner * {
+  margin-bottom: 16px;	
+	border: none;
+	background: none;
+}
+
+#inner img {
+  float: left;
+	margin-right: 12px;
+	margin-bottom: 12px;
+}
+
+#inner h1 {
+  display: block;
+	width: 100%;
+	border-bottom: 1px solid #333;
+	font-size: 1.2em;
+}
+
+#inner blockquote {
+  margin-left: 3em;
+	margin-right: 3em;
+}
+
+.style {
+  font-family:Arial, Helvetica, sans-serif;
+	background: #eee;
+	color: #333;
+}
+
+.size {
+	width: 75%;
+	font-size: 18px;
+}
