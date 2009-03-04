@@ -51,10 +51,31 @@
 	margin-right: 3em;
 }
 
+#dateline {
+  font-size: 0.8em;
+  margin-top: -1em;
+  font-variant: small-caps;
+}
+
+#byline {
+  font-family: "Lucida Console", Monaco, monospace;
+  margin-top: 1.3em;
+}
+
+#byline a {
+  color: #666;
+	text-decoration: none;
+}
+
 .style {
   font-family:Arial, Helvetica, sans-serif;
 	background: #eee;
 	color: #333;
+}
+
+.style h1 {
+	font-family: "Arial Black", Gadget, sans-serif;
+	font-weight: normal;
 }
 
 .size {
