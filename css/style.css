@@ -58,13 +58,23 @@
 }
 
 #byline {
-/*  font-family: "Lucida Console", Monaco, monospace;*/
   margin-top: 1.3em;
 }
 
-#byline a {
+#email {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.8em;
+  margin-top: -1em;
+}
+
+#email a {
   color: #666;
 	text-decoration: none;
+}
+
+#email a:hover {
+  text-decoration: underline;
+  color: #333;
 }
 
 .style {
