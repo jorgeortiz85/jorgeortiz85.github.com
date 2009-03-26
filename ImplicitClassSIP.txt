@@ -12,4 +12,25 @@ A secondary drawback is that the pattern is fairly verbose. It requires both a c
 
 Description
 
-An "implicit class" must have a primary constructor with exactly one argument. An implicit class 
+An "implicit class" must have a primary constructor with exactly one argument in its first parameter list. It may also include an additional implicit parameter list. Like case classes, an implicit class definition will add methods to its companion class, and define it if it hasn't already been defined. Only one method, "apply", is added to the companion object, in the same way as "apply" is added to a case class's companion object. Unlike with case classes, this "apply" method is declared implicit. This method will be referred to as the implicit conversion.
+
+For example, a definition of the form:
+
+  implicit class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
+    def r: java.util.Regex = ...
+  }
+
+will be transformed by the compiler into the following definitions:
+
+  class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
+    def r: java.util.Regex = ...
+  }
+
+  object RichString extends Function1[String, RichString] {
+    implicit def apply(s: String): RichString = new RichString(s)
+  }
+
+With implicit class definitions, the compiler may transform code that uses the implicit conversion in order to eliminate object creation, so long as the transformation preserves the semantics of the original program.
+
+In addition, a class annotation "sreplace" (for "scalar replacement") would be added as part of the standard library. If an implicit class is annotated with @sreplace, the compiler must eliminate object creation as part of the implicit conversion or else emit an error. Nothing other than implicit classes may be annotated with @sreplace.
+
