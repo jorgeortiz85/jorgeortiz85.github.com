@@ -1,0 +1,15 @@
+Abstract
+
+A minimal language construct is proposed that allows for more concise use of the common "Pimp My Library" pattern. This construct permits the compiler to eliminate object creation so long as the transformation preserves the semantics of the original program. In addition, an annotation is proposed for the standard library that verifies such an optimization was performed.
+
+Motivation
+
+The popular Pimp My Library (http://www.artima.com/weblogs/viewpost.jsp?thread=179766) pattern is used in Scala to extend pre-existing classes with new methods, fields, and interfaces.
+
+The main drawback it suffers is that every invocation of the implicit conversion involves object creation. This makes the pattern unsuitable for use in performance-critical code. In these situations it is common to remove use of the pattern and resort to using an object with static helper methods. In many cases, this is a simple mechanical transformation that could be performed by an optimizing compiler.
+
+A secondary drawback is that the pattern is fairly verbose. It requires both a class definition and an implicit method definition. These definitions can occur separately, possibly causing confusion about the location of an extension class's conversion method or vice versa. In addition, both definitions must be documented.
+
+Description
+
+An "implicit class" must have a primary constructor with exactly one argument. An implicit class 
