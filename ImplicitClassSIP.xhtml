@@ -61,7 +61,7 @@ TmplDef       ::= [‘case’] ‘class’ ClassDef</code></pre>
   <p>Another design consideration is to give compiler implementers as much flexibility as possible when optimizing implicit classes. In particular, compilers are allowed to implement minimal or no optimizations. This allows for improvements to the compiler to be added at later dates with no further changes to the specification.</p>
   
   <h2>Possible Implementation</h2>
-  <p>The details of optimizations are purposefully left to the compiler implementer, but the authors envision as feasible transforming the following implicit class and it's usage:</p>
+  <p>The details of optimizations are purposefully left to the compiler implementer, but the authors envision as feasible transforming the following implicit class and it's usage, which would normally involve object creation:</p>
   <pre><code>implicit class RichInt(n: Int) extends Ordered[Int] {
   def min(m: Int): Int = if (n &lt;= m) n else m
   ...
@@ -70,7 +70,7 @@ TmplDef       ::= [‘case’] ‘class’ ClassDef</code></pre>
 import RichInt._
 
 val i = 3 min 5</code></pre>
-  <p>Into the following code, free of object allocation:</p>
+  <p>Into the following code, free of object creation:</p>
   <pre><code>class RichInt(n: Int) extends Ordered[Int] {
   def min(m: Int): Int = if (n &lt;= m) n else m
   ...
