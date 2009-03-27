@@ -31,7 +31,7 @@
   <p>A secondary drawback is that the pattern is fairly verbose. It requires both a class definition and an implicit method definition. These definitions can occur separately, possibly causing confusion about the location of an extension class's conversion method or vice versa. In addition, both definitions must be documented.</p>
   
   <h2>Description</h2>
-  <p>An "implicit class" must have a primary constructor with exactly one argument in its first parameter list. It may also include an additional implicit parameter list. Like case classes, an implicit class definition will add methods to its companion class, and define it if it hasn't already been defined. Only one method, "apply", is added to the companion object, in the same way as "apply" is added to a case class's companion object. Unlike with case classes, this "apply" method is declared implicit. This method will be referred to as the implicit conversion.</p>
+  <p>An <em>implicit class</em> must have a primary constructor with exactly one argument in its first parameter list. It may also include an additional implicit parameter list. Like case classes, an implicit class definition will add methods to its companion class, and define it if it hasn't already been defined. Only one method, "apply", is added to the companion object, in the same way as "apply" is added to a case class's companion object. Unlike with case classes, this "apply" method is declared implicit. This method will be referred to as the implicit conversion.</p>
   <p>For example, a definition of the form:</p>
   <pre><code>implicit class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
   def r: java.util.Regex = ...
