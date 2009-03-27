@@ -72,20 +72,20 @@ import RichInt._
 val i = 3 min 5</code></pre>
   <p>Into the following code, free of object creation:</p>
   <pre><code>class RichInt(n: Int) extends Ordered[Int] {
-  def min(m: Int): Int = if (n &lt;= m) n else m
+  def min(m: Int): Int = RichInt.methods$.min(n, m)
   ...
 }
 
 object RichInt {
   implicit def apply(n: Int): RichInt = new RichInt(n)
   
-  &lt;synthetic&gt; object staticMethods {
+  &lt;synthetic&gt; object methods$ {
     def min(n: Int, m: Int): Int = if (n &lt;= m) n else m
     ...
   }
 }
 
-val i = RichInt.staticMethods.min(3, 5)</code></pre>
+val i = RichInt.methods$.min(3, 5)</code></pre>
   <p>The methods in the implicit class are implemented as static methods of a synthetic object. The compiler can then elide the use of the implicit conversion, avoid object creation, and use the static method instead. Since these optimizations are optional, the compiler can place arbitrary restrictions on which classes can be optimized (e.g., no <code>var</code>s, no escaped references to <code>this</code>). The only restriction is that the semantics of the program must not change if optimizations occur.</p>
 
 </body>
