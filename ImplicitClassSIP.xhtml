@@ -21,28 +21,30 @@
 </head>
 <body>
   <h1>Syntax and optimizations for implicit classes</h1>
-  <p>Copyright &copy; 2009, Jorge Ortiz, David Hall</p>
+  <p>Copyright &copy; 2009, Jorge Ortiz and David Hall</p>
   <h2>Abstract</h2>
   <p>A minimal language construct is proposed that allows for more concise use of the common "Pimp My Library" pattern. This construct permits the compiler to eliminate object creation so long as the transformation preserves the semantics of the original program. In addition, an annotation is proposed for the standard library that verifies such an optimization was performed.</p>
   
   <h2>Motivation</h2>
-  <p>The popular Pimp My Library (http://www.artima.com/weblogs/viewpost.jsp?thread=179766) pattern is used in Scala to extend pre-existing classes with new methods, fields, and interfaces.</p>
+  <p>The popular <a href="http://www.artima.com/weblogs/viewpost.jsp?thread=179766">Pimp My Library</a> pattern is used in Scala to extend pre-existing classes with new methods, fields, and interfaces.</p>
   <p>The main drawback it suffers is that every invocation of the implicit conversion involves object creation. This makes the pattern unsuitable for use in performance-critical code. In these situations it is common to remove use of the pattern and resort to using an object with static helper methods. In many cases, this is a simple mechanical transformation that could be performed by an optimizing compiler.</p>
   <p>A secondary drawback is that the pattern is fairly verbose. It requires both a class definition and an implicit method definition. These definitions can occur separately, possibly causing confusion about the location of an extension class's conversion method or vice versa. In addition, both definitions must be documented.</p>
   
   <h2>Description</h2>
   <p>An <em>implicit class</em> must have a primary constructor with exactly one argument in its first parameter list. It may also include an additional implicit parameter list. Like case classes, an implicit class definition will add methods to its companion class, and define it if it hasn't already been defined. Only one method, <code>apply</code>, is added to the companion object, in the same way as it is added to a case class's companion object. Unlike with case classes, this <code>apply</code> method is declared implicit. This method will be referred to as the implicit conversion.</p>
   <p>For example, a definition of the form:</p>
-  <pre><code>implicit class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
-  def r: java.util.Regex = ...
+  <pre><code>implicit class RichInt(n: Int) extends Ordered[Int] {
+  def min(m: Int): Int = if (n &lt;= m) n else m
+  ...
 }</code></pre>
   <p>will be transformed by the compiler as follows:</p>
-<pre><code>class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
-  def r: java.util.Regex = ...
+<pre><code>class RichInt(n: Int) extends Ordered[Int] {
+  def min(m: Int): Int = if (n &lt;= m) n else m
+  ...
 }
 
-object RichString extends Function1[String, RichString] {
-  implicit def apply(s: String): RichString = new RichString(s)
+object RichInt {
+  implicit def apply(n: Int): RichInt = new RichInt(n)
 }</code></pre>
   <p>With implicit class definitions, the compiler may transform code that uses the implicit conversion in order to eliminate object creation, so long as the transformation preserves the semantics of the original program.</p>
   <p>In addition, a class annotation <code>@sreplace</code> (for "scalar replacement") would be added as part of the standard library. If an implicit class is annotated with it, the compiler must eliminate object creation as part of the implicit conversion or else emit an error. This annotation may only be used on implicit classes.</p>
@@ -52,10 +54,39 @@ object RichString extends Function1[String, RichString] {
 <pre><code>LocalModifier ::= ‘implicit’
 BlockStat     ::= {LocalModifier} TmplDef
 TmplDef       ::= [‘case’] ‘class’ ClassDef</code></pre>
-  <p>The language specification (SLS 7.1) would have to be modified to allow the use of the implicit modifier for classes, even at the top-level. A new section on Implicit Classes would describe the behavior of the construct.</p>
+  <p>The language specification (SLS 7.1) would be modified to allow the use of the implicit modifier for classes, even at the top-level. A new section on Implicit Classes would describe the behavior of the construct.</p>
   
   <h2>Consequences</h2>
-  <p>One design consideration is that the name of the implicit class may be imported without also importing its implicit conversion. For the example above, <code>import RichString</code> would import the name of the class, but not the implicit conversion. In contrast, <code>import RichString._</code> would import the implicit conversion, making available the methods defined in RichString.</p>
+  <p>One design consideration is that the name of the implicit class may be imported without also importing its implicit conversion. For the example above, <code>import RichInt</code> would import the name of the class, but not the implicit conversion. In contrast, <code>import RichInt._</code> would import the implicit conversion, making available the methods defined in RichInt.</p>
   <p>Another design consideration is to give compiler implementers as much flexibility as possible when optimizing implicit classes. In particular, compilers are allowed to implement minimal or no optimizations. This allows for improvements to the compiler to be added at later dates with no further changes to the specification.</p>
+  
+  <h2>Possible Implementation</h2>
+  <p>The details of optimizations are purposefully left to the compiler implementer, but the authors envision as feasible transforming the following implicit class and it's usage:</p>
+  <pre><code>implicit class RichInt(n: Int) extends Ordered[Int] {
+  def min(m: Int): Int = if (n &lt;= m) n else m
+  ...
+}
+
+import RichInt._
+
+val i = 3 min 5</code></pre>
+  <p>Into the following code, free of object allocation:</p>
+  <pre><code>class RichInt(n: Int) extends Ordered[Int] {
+  def min(m: Int): Int = if (n &lt;= m) n else m
+  ...
+}
+
+object RichInt {
+  implicit def apply(n: Int): RichInt = new RichInt(n)
+  
+  &lt;synthetic&gt; object staticMethods {
+    def min(n: Int, m: Int): Int = if (n &lt;= m) n else m
+    ...
+  }
+}
+
+val i = RichInt.staticMethods.min(3, 5)</code></pre>
+  <p>The methods in the implicit class are implemented as static methods of a synthetic object. The compiler can then elide the use of the implicit conversion, avoid object creation, and use the static method instead. Since these optimizations are optional, the compiler can place arbitrary restrictions on which classes can be optimized (e.g., no <code>var</code>s, no escaped references to <code>this</code>). The only restriction is that the semantics of the program must not change if optimizations occur.</p>
+
 </body>
 </html>
