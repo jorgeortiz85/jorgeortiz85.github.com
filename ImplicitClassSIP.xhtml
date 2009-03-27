@@ -47,7 +47,7 @@ object RichInt {
   implicit def apply(n: Int): RichInt = new RichInt(n)
 }</code></pre>
   <p>With implicit class definitions, the compiler may transform code that uses the implicit conversion in order to eliminate object creation, so long as the transformation preserves the semantics of the original program.</p>
-  <p>In addition, a class annotation <code>@sreplace</code> (for "scalar replacement") would be added as part of the standard library. If an implicit class is annotated with it, the compiler must eliminate object creation as part of the implicit conversion or else emit an error. This annotation may only be used on implicit classes.</p>
+  <p>In addition, a class annotation <code>@sreplace</code> (for "scalar replacement") would be added as part of the standard library. If a member of an implicit class is annotated with it, the compiler must optimize access to that member (i.e., avoid object creation) or else emit an error. If an implicit class is annotated with it, the compiler must optimize access to all that class's members or else emit an error. This annotation may only be used on implicit classes and their members.</p>
 
   <h2>Specification</h2>
   <p>No changes are required to Scala's syntax specification, as the relevant production rules already allow for implicit classes.</p>
