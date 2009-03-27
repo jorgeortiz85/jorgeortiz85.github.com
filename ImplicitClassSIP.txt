@@ -20,7 +20,7 @@ For example, a definition of the form:
     def r: java.util.Regex = ...
   }
 
-will be transformed by the compiler into the following definitions:
+will be transformed by the compiler as follows:
 
   class RichString(s: String) extends Ordered[String] with RandomAccessSeq[Char] {
     def r: java.util.Regex = ...
@@ -33,4 +33,14 @@ will be transformed by the compiler into the following definitions:
 With implicit class definitions, the compiler may transform code that uses the implicit conversion in order to eliminate object creation, so long as the transformation preserves the semantics of the original program.
 
 In addition, a class annotation "sreplace" (for "scalar replacement") would be added as part of the standard library. If an implicit class is annotated with @sreplace, the compiler must eliminate object creation as part of the implicit conversion or else emit an error. Nothing other than implicit classes may be annotated with @sreplace.
+
+Specification
+
+Syntax
+
+No changes are required to Scala's syntax specification, as the relevant production rules already allow for implicit classes.
+
+  LocalModifier ::= ‘implicit’
+  BlockStat     ::= {LocalModifier} TmplDef
+  TmplDef       ::= [‘case’] ‘class’ ClassDef
 
