@@ -1,0 +1,128 @@
+/**
+ * Based on Arc90 Lab's Readability CSS
+ * http://lab.arc90.com/experiments/readability/css/readability.css
+ *
+ * Used under the terms of the Creative Commons Attribution License 2.5
+ * http://creativecommons.org/licenses/by/2.5/
+ *
+ * "All tools, ideas or experments in the arc90 lab are licensed under
+ *  a Creative Commons Attribution 2.5 License."
+ * -- http://lab.arc90.com/experiments/
+ **/
+#tools {
+  height:150px;
+  left:10px;
+  position:fixed;
+  top:10px;
+  width:34px;
+  z-index:100;
+}
+
+#tools a {
+  display:block;
+  height:34px;
+  margin-bottom:8px;
+  opacity:0.4;
+  overflow:hidden;
+  text-indent:-99999px;
+}
+
+#tools a:hover{
+  opacity: 1;
+  filter:alpha(opacity=100);
+}
+
+#home-page{
+  background: url(http://jorgeortiz85.github.com/images/home.png) no-repeat left top;
+}
+
+#outer {
+  display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 250000;
+	width: 100%;
+}
+
+#inner {
+  text-align: left;
+	line-height: 1.4em;	
+	margin: 1em auto;
+	max-width: 800px;
+}
+
+#inner a {
+  color: blue;
+	text-decoration: none;
+}
+
+#inner a:hover {
+	text-decoration: underline;
+}
+
+#inner * {
+  margin-bottom: 16px;	
+	border: none;
+	background: none;
+}
+
+#inner img {
+  float: left;
+	margin-right: 12px;
+	margin-bottom: 12px;
+}
+
+#inner h1 {
+  display: block;
+	width: 100%;
+	border-bottom: 1px solid #333;
+	font-size: 1.2em;
+}
+
+#inner blockquote {
+  margin-left: 3em;
+	margin-right: 3em;
+}
+
+#dateline {
+  font-size: 0.8em;
+  margin-top: -1em;
+  font-variant: small-caps;
+}
+
+#byline {
+  margin-top: 1.3em;
+}
+
+#email {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.8em;
+  margin-top: -1em;
+}
+
+#email a {
+  color: #666;
+	text-decoration: none;
+}
+
+#email a:hover {
+  text-decoration: underline;
+  color: #333;
+}
+
+.style {
+  font-family:Arial, Helvetica, sans-serif;
+	background: #eee;
+	color: #333;
+}
+
+.style h1 {
+	font-family: "Arial Black", Gadget, sans-serif;
+	font-weight: normal;
+}
+
+.size {
+	width: 70%;
+	font-size: 18px;
+}
