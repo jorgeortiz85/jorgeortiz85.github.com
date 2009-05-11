@@ -1,10 +1,40 @@
-/*
-  Based on Arc90 Lab's Readability CSS
-  http://lab.arc90.com/experiments/readability/css/readability.css
-  
-  Used under the terms of the Creative Commons Attribution License 2.5
-  http://creativecommons.org/licenses/by/2.5/
-*/
+/**
+ * Based on Arc90 Lab's Readability CSS
+ * http://lab.arc90.com/experiments/readability/css/readability.css
+ *
+ * Used under the terms of the Creative Commons Attribution License 2.5
+ * http://creativecommons.org/licenses/by/2.5/
+ *
+ * "All tools, ideas or experments in the arc90 lab are licensed under
+ *  a Creative Commons Attribution 2.5 License."
+ * -- http://lab.arc90.com/experiments/
+ **/
+#tools {
+  height:150px;
+  left:10px;
+  position:fixed;
+  top:10px;
+  width:34px;
+  z-index:100;
+}
+
+#tools a {
+  display:block;
+  height:34px;
+  margin-bottom:8px;
+  opacity:0.4;
+  overflow:hidden;
+  text-indent:-99999px;
+}
+
+#tools a:hover{
+  opacity: 1;
+  filter:alpha(opacity=100);
+}
+
+#home-page{
+  background: url(http://jorgeortiz85.github.com/images/home.png) no-repeat left top;
+}
 
 #outer {
   display: block;
@@ -89,6 +119,6 @@
 }
 
 .size {
-	width: 75%;
+	width: 70%;
 	font-size: 18px;
 }
