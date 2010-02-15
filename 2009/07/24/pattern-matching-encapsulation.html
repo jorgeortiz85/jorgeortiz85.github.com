@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="description" content="" />
+  <meta name="keywords" content="" />
+  <link rel="stylesheet" href="/css/post.css" />
+  <link rel="stylesheet" href="/css/sxr.css" />
+  <script type="text/javascript" src="/js/jquery-all.js"></script>
+  <script type="text/javascript" src="/js/sxr.js"></script>
+  <title>Uncountably Many - Does pattern matching break encapsulation?</title>
+</head>
+<body class="style">
+  <div id="outer" class="style">
+			<div id="tools">
+				<a id="home-page" title="Home" href="/">Home</a>
+			</div>
+      <div id="inner" class="size">
+        <h1>Does pattern matching break encapsulation?</h1>
+        <div id="dateline">24 Jul 2009</div>
+        <p>Scala attempts to unify functional and object-oriented programming. One of the concepts that Scala borrows from functional programming is <em>pattern matching</em>.</p>
+
+<p>Pattern matching can be used anywhere you might use <code>switch/case</code>:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="(Int)Int" id="7276">fib</a>(<a title="Int" id="7278">n</a>: <span title="Int">Int</span>): <span title="Int">Int</span> = <a href="#7278" title="Int">n</a> <span title="Int" class="keyword">match</span> {
+      <span title="Int(0)" class="keyword">case</span> <span title="Int(0)" class="int">0</span> =&gt; <span title="Int(0)" class="int">0</span>
+      <span title="Int(1)" class="keyword">case</span> <span title="Int(1)" class="int">1</span> =&gt; <span title="Int(1)" class="int">1</span>
+      <span title="Int" class="keyword">case</span> <a title="Int" id="7279">n</a> =&gt; <a href="#7276" title="(Int)Int">fib</a>(<a href="#7279" title="Int">n</a><span title="(Int)Int">-</span><span title="Int(1)" class="int">1</span>) <a title="(Int)Int" id="3111">+</a> <a href="#7276" title="(Int)Int">fib</a>(<a href="#7279" title="Int">n</a><span title="(Int)Int">-</span><span title="Int(2)" class="int">2</span>)
+    }
+</pre>
+
+<p>You can also use pattern matching to "break open" case classes and access the parameters that were used to construct it:</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait Point extends java.lang.Object" id="8516">Point</a>
+    <span class="keyword">case</span> <span class="keyword">class</span> <a title="class CartesianPoint extends java.lang.Object with PatternMatchingEncapsulation.ex2.Point with ScalaObject with Product" id="8593">CartesianPoint</a>(<a title="Double" id="8665">x</a>: <span title="Double">Double</span>, <a title="Double" id="8666">y</a>: <span title="Double">Double</span>) <span class="keyword">extends</span> <a href="#8516" title="PatternMatchingEncapsulation.ex2.Point">Point</a>
+
+    <span class="keyword">def</span> <a title="(PatternMatchingEncapsulation.ex2.Point)Boolean" id="8520">isSpecial</a>(<a title="PatternMatchingEncapsulation.ex2.Point" id="8639">point</a>: <a href="#8516" title="PatternMatchingEncapsulation.ex2.Point">Point</a>): <span title="Boolean">Boolean</span> = <a href="#8639" title="PatternMatchingEncapsulation.ex2.Point">point</a> <span title="Boolean" class="keyword">match</span> {
+      <span title="Boolean(true)" class="keyword">case</span> CartesianPoint(<a title="Double" id="8658">x</a>, <a title="Double" id="8659">y</a>) <span class="keyword">if</span> <a href="#8658" title="Double">x</a><span title="(Double)Double">*</span><a href="#8658" title="Double">x</a> <span title="(Double)Double">+</span> <a href="#8659" title="Double">y</a><span title="(Double)Double">*</span><a href="#8659" title="Double">y</a> <span title="(Double)Boolean">&gt;</span> <span title="Double(25.0)" class="double">25.0</span> =&gt; <span title="Boolean(true)" class="keyword">true</span>
+      <span title="Boolean(false)" class="keyword">case</span> _ =&gt; <span title="Boolean(false)" class="keyword">false</span>
+    }
+</pre>
+
+<p>One criticism of pattern matching is that it violates <em>encapsulation</em>, the object-oriented principle that says the interface of a class should be independent of its implementation details. If we change the implementation details of <code>CartesianPoint</code>, we'll break the pattern matching statements that depended on those details.</p>
+
+<h2>Extractors</h2>
+
+<p>Scala relies on extractors to make pattern matching more object-oriented. Extractors define a "view" on a particular kind of object. This allows Scala code that uses pattern matching to maintain encapsulation: just provide a "view" into your new implementation that matches the old one.</p>
+
+<p>Suppose we wanted to implement Points in terms of polar coordinates instead of Cartesian coordinates:</p>
+
+  <pre>
+    <span class="keyword">trait</span> <a title="trait Point extends java.lang.Object" id="8670">Point</a>
+    <span class="keyword">case</span> <span class="keyword">class</span> <a title="class PolarPoint extends java.lang.Object with PatternMatchingEncapsulation.ex3.Point with ScalaObject with Product" id="8696">PolarPoint</a>(<a title="Double" id="8886">radius</a>: <span title="Double">Double</span>, <a title="Double" id="8887">theta</a>: <span title="Double">Double</span>) <span class="keyword">extends</span> <a href="#8670" title="PatternMatchingEncapsulation.ex3.Point">Point</a>
+
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex3.CartesianPoint" id="8674">CartesianPoint</a> {
+      <span class="keyword">def</span> <a title="(Double,Double)PatternMatchingEncapsulation.ex3.Point" id="8713">apply</a>(<a title="Double" id="8716">x</a>: <span title="Double">Double</span>, <a title="Double" id="8717">y</a>: <span title="Double">Double</span>): <a href="#8670" title="PatternMatchingEncapsulation.ex3.Point">Point</a> = {
+        <span class="keyword">val</span> <a title="Double" id="8718">radius</a> = <span title="object Math">Math</span>.<a title="(Double)Double" id="8780">sqrt</a>(<a href="#8716" title="Double">x</a><span title="(Double)Double">*</span><a href="#8716" title="Double">x</a> <span title="(Double)Double">+</span> <a href="#8717" title="Double">y</a><span title="(Double)Double">*</span><a href="#8717" title="Double">y</a>)
+        <span class="keyword">val</span> <a title="Double" id="8719">theta</a> =
+          <span title="Double" class="keyword">if</span> (<a href="#8716" title="Double">x</a> <span title="(Double)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> <span title="(Boolean)Boolean">&amp;&amp;</span> <a href="#8717" title="Double">y</a> <span title="(Double)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span>) <span title="Double(0.0)" class="double">0.0</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#8716" title="Double">x</a> <span title="(Double)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> <span title="(Boolean)Boolean">&amp;&amp;</span> <a href="#8717" title="Double">y</a> <span title="(Double)Boolean">&gt;</span> <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span><span title="(Int)Double">/</span><span title="Int(2)" class="int">2</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#8716" title="Double">x</a> <span title="(Double)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> <span title="(Boolean)Boolean">&amp;&amp;</span> <a href="#8717" title="Double">y</a> <span title="(Double)Boolean">&lt;</span> <span title="Double(0.0)" class="double">0.0</span>) <span title="Int(3)" class="int">3</span><span title="(Double)Double">*</span><span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span><span title="(Int)Double">/</span><span title="Int(2)" class="int">2</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#8716" title="Double">x</a> <span title="(Int)Boolean">&gt;</span> <span title="Int(0)" class="int">0</span> <span title="(Boolean)Boolean">&amp;&amp;</span> <a href="#8717" title="Double">y</a> <a title="(Double)Boolean" id="3432">&gt;=</a> <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="(Double)Double">atan</span>(<a href="#8717" title="Double">y</a><span title="(Double)Double">/</span><a href="#8716" title="Double">x</a>)
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#8716" title="Double">x</a> <span title="(Int)Boolean">&gt;</span> <span title="Int(0)" class="int">0</span> <span title="(Boolean)Boolean">&amp;&amp;</span> <a href="#8717" title="Double">y</a> <span title="(Double)Boolean">&lt;</span> <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="(Double)Double">atan</span>(<a href="#8717" title="Double">y</a><span title="(Double)Double">/</span><a href="#8716" title="Double">x</a>) <span title="(Double)Double">+</span> <span title="Int(2)" class="int">2</span><span title="(Double)Double">*</span><span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span>
+          <span class="keyword">else</span> <span title="object Math">Math</span>.<span title="(Double)Double">atan</span>(<a href="#8717" title="Double">y</a><span title="(Double)Double">/</span><a href="#8716" title="Double">x</a>) <span title="(Double)Double">+</span> <span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span>
+        <a href="#8696" title="(Double,Double)PatternMatchingEncapsulation.ex3.PolarPoint">PolarPoint</a>(<a href="#8718" title="Double">radius</a>, <a href="#8719" title="Double">theta</a>)
+      }
+      <span class="keyword">def</span> <a title="(PatternMatchingEncapsulation.ex3.Point)Option[(Double, Double)]" id="8714">unapply</a>(<a title="PatternMatchingEncapsulation.ex3.Point" id="8888">point</a>: <a href="#8670" title="PatternMatchingEncapsulation.ex3.Point">Point</a>) = <a href="#8888" title="PatternMatchingEncapsulation.ex3.Point">point</a> <span title="Option[(Double, Double)]" class="keyword">match</span> {
+        <span title="Some[(Double, Double)]" class="keyword">case</span> PolarPoint(<a title="Double" id="8890">r</a>, <a title="Double" id="8891">th</a>) =&gt;
+          <span title="((Double, Double))Some[(Double, Double)]">Some</span>(<span title="(Double,Double)(Double, Double)">(</span><a href="#8890" title="Double">r</a><span title="(Double)Double">*</span><span title="object Math">Math</span>.<a title="(Double)Double" id="8771">cos</a>(<a href="#8891" title="Double">th</a>), <a href="#8890" title="Double">r</a><span title="(Double)Double">*</span><span title="object Math">Math</span>.<a title="(Double)Double" id="8770">sin</a>(<a href="#8891" title="Double">th</a>)))
+        <span title="None.type" class="keyword">case</span> _ =&gt;
+          <span title="object None">None</span>
+      }
+    }
+  </pre>
+
+<p>The <code>apply</code> method on <code>CartesianPoint</code> specifies how to construct a <code>PolarPoint</code> from a pair of (x, y) coordinates. Likewise, the <code>unapply</code> method specifies how to construct a pair of (x, y) coordinates from a <code>PolarPoint</code>. It is this second method which is the extractor. It lets us pattern match on <code>PolarPoint</code>s as if they were <code>CartesianPoint</code>s. In particular, the <code>isSpecial</code> method, defined above, can be used unchanged with our new, polar, implementation of points. Extractors let us keep encapsulation even when using pattern matching.</p>
+
+<h2>A catch (or two)</h2>
+
+<p>Is that the end of the story of pattern matching and encapsulation? Unfortunately, no. There are two ways in which pattern matching can break encapsulation. The first is through <code>sealed</code> classes, the second is through singletons.</p>
+
+<p>A sealed class can only be subclassed within the same file, so the compiler knows statically all the possible subclasses of that class. This lets the Scala compiler check whether a pattern match on a sealed type is <em>exhaustive</em>. If you forget to check one of the possible subclasses, the Scala compiler will warn you that your match is not exhaustive. Consider the <code>List</code> class. <code>List</code> has two subclasses, <code>::</code> (pronounced "cons") and <code>Nil</code>. Cons represents the non-empty <code>List</code>, with a head and a tail, while <code>Nil</code> represents the empty List, with no head and no tail. If we try to define a method that matches on a <code>List</code> but forgets to match the <code>Nil</code> case:</p>
+
+  <pre>
+    <span class="keyword">def</span> <a title="[T](List[T])T" id="8952">head</a>[<a title="&gt;: Nothing &lt;: Any" id="8954">T</a>](<a title="List[T]" id="8956">xs</a>: <span title="List[T]">List</span>[T]): <a href="#8954" title="T">T</a> = <a href="#8956" title="List[T]">xs</a> <span title="T" class="keyword">match</span> {
+      <span title="T" class="keyword">case</span> <a title="T" id="8983">hd</a> :: <a title="List[T]" id="8984">tl</a> =&gt; <a href="#8983" title="T">hd</a>
+    }
+  </pre>
+
+<p>Then we get a reprimand from the compiler: <code>warning: match is not exhaustive! missing combination Nil</code>.</p>
+
+<p>If we define our own "cons" extractor, we don't get the same warning:</p>
+
+  <pre>
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex5.:/:" id="8986">:/:</a> {
+      <span class="keyword">def</span> <a title="[T](List[T])Option[(T, List[T])]" id="8993">unapply</a>[<a title="&gt;: Nothing &lt;: Any" id="8995">T</a>](<a title="List[T]" id="8997">xs</a>: <span title="List[T]">List</span>[T]) =
+        <span title="Option[(T, List[T])]" class="keyword">if</span> (<a href="#8997" title="List[T]">xs</a>.<span title="=&gt; Boolean">isEmpty</span>) <span title="object None">None</span>
+        <span class="keyword">else</span> <span title="((T, List[T]))Some[(T, List[T])]">Some</span>(<a href="#8997" title="List[T]">xs</a>.<a title="=&gt; T" id="6770">head</a>, <a href="#8997" title="List[T]">xs</a>.<a title="=&gt; List[T]" id="6772">tail</a>)
+    }
+
+    <span class="keyword">def</span> <a title="[T](List[T])T" id="8988">customHead</a>[<a title="&gt;: Nothing &lt;: Any" id="8990">T</a>](<a title="List[T]" id="9024">xs</a>: <span title="List[T]">List</span>[T]): <a href="#8990" title="T">T</a> = <a href="#9024" title="List[T]">xs</a> <span title="T" class="keyword">match</span> {
+      <span title="T" class="keyword">case</span> <a title="T" id="9028">hd</a> <a href="#8993" title="(List[T])Option[(T, List[T])]">:/:</a> <a title="List[T]" id="9029">tl</a> =&gt; <a href="#9028" title="T">hd</a>
+    }
+  </pre>
+
+<p>Now, this is a relatively minor problem. The warning is nice to have, but it's not essential. The bigger problem is matching on singletons. The empty <code>List</code>, <code>Nil</code>, is an implementation detail we can never change. We can simulate the <code>::</code> case class with an extractor (as above with <code>:/:</code>, but there is simply no way we can simulate Nil with an extractor. The best we can do requires us to match on <code>MyNil()</code>, because matching on <code>MyNil</code> would match on the object, not it's <code>unapply</code> method.</p>
+
+  <pre>
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex6.MyNil" id="9031">MyNil</a> {
+      <span class="keyword">def</span> <a title="[T](List[T])Boolean" id="9038">unapply</a>[<a title="&gt;: Nothing &lt;: Any" id="9040">T</a>](<a title="List[T]" id="9042">xs</a>: <span title="List[T]">List</span>[T]): <span title="Boolean">Boolean</span> =
+        <span title="Boolean" class="keyword">if</span> (<a href="#9042" title="List[T]">xs</a>.<span title="=&gt; Boolean">isEmpty</span>) <span title="Boolean(true)" class="keyword">true</span>
+        <span class="keyword">else</span> <span title="Boolean(false)" class="keyword">false</span>
+    }
+
+    <span class="keyword">def</span> <a title="[T](List[T])Boolean" id="9033">empty</a>[<a title="&gt;: Nothing &lt;: Any" id="9035">T</a>](<a title="List[T]" id="9043">xs</a>: <span title="List[T]">List</span>[T]): <span title="Boolean">Boolean</span> = <a href="#9043" title="List[T]">xs</a> <span title="Boolean" class="keyword">match</span> {
+      <span title="Boolean(true)" class="keyword">case</span> <a href="#9038" title="(List[T])Boolean">MyNil</a>() =&gt; <span title="Boolean(true)" class="keyword">true</span>
+      <span title="Boolean(false)" class="keyword">case</span> _ =&gt; <span title="Boolean(false)" class="keyword">false</span>
+    }
+  </pre>
+
+<h2>Conclusion</h2>
+
+<p>I don't want people to get me wrong: I love pattern matching. Practically every day I'm grateful that Scala has it. It makes certain kinds of programming problems much easier to solve. (I discuss the kinds of problems that benefit from pattern matching vs OO-style inheritance and virtual method dispatch <a href="http://stackoverflow.com/questions/563369/does-scalas-pattern-matching-violate-the-open-closed-principle">this StackOverflow question</a>.) However, library designers should be conscious of the implementation details they might be exposing if they're letting their users pattern match on sealed classes or singletons. Pattern matching can be very powerful, but as with many things in Scala: with great power comes great responsibility.</p>
+        <div id="byline">&#8212; Jorge Ortiz</div>
+<div id="email"><a href="http://twitter.com/jorgeortiz85">@jorgeortiz85</a></div>
+
+      </div>
+  </div>
+</body>
+</html>
