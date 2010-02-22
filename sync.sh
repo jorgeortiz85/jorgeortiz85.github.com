@@ -1,1 +1,0 @@
-rsync -raz --progress --size-only /Users/jortiz/Code/blog/_site/* uncountablymany@cletus.dreamhost.com:/home/uncountablymany/uncountablymany.com/
