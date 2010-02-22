@@ -3,7 +3,7 @@
  <title>Uncountably Many</title>
  <link href="http://uncountablymany.com/atom.xml" rel="self"/>
  <link href="http://uncountablymany.com/"/>
- <updated>2010-02-22T01:14:06-08:00</updated>
+ <updated>2010-02-22T01:42:11-08:00</updated>
  <id>http://uncountablymany.com/</id>
  <author>
    <name>Jorge Ortiz</name>
@@ -375,34 +375,7 @@
    <link href="http://uncountablymany.com/2009/01/01/facebook-ads-fail.html"/>
    <updated>2009-01-01T00:00:00-08:00</updated>
    <id>http://uncountablymany.com/2009/01/01/facebook-ads-fail</id>
-   <content type="html">&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;ruby&quot;&gt;    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;
-      &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lockInterruptibly&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;Condition&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;newCondition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;scala&quot;&gt;    &lt;span class=&quot;k&quot;&gt;trait&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;](&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-          &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;finally&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;&lt;p&gt;One of Facbeook&amp;#8217;s monetizations strategies has been to imitate Google&amp;#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&amp;#8217;s search results. AdWords accounts for a large part of Google&amp;#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&amp;#8217;s ads work and Facebook&amp;#8217;s ads fail, but today I just want to mention one particular failure on Facebook&amp;#8217;s part: Facebook shows me ads when I don&amp;#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
+   <content type="html">&lt;p&gt;One of Facbeook&amp;#8217;s monetizations strategies has been to imitate Google&amp;#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&amp;#8217;s search results. AdWords accounts for a large part of Google&amp;#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&amp;#8217;s ads work and Facebook&amp;#8217;s ads fail, but today I just want to mention one particular failure on Facebook&amp;#8217;s part: Facebook shows me ads when I don&amp;#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
 &lt;p&gt;First, consider Google. When I don&amp;#8217;t want to see ads, Google makes it easy for me to ignore them. Google&amp;#8217;s ads are small, text-only, set to one side, and are clearly labeled as advertisements. This empowerment to easily ignore ads keeps me happy as a user and coming back to Google for search. However, for certain search terms (like &amp;#8220;flowers&amp;#8221; or &amp;#8220;divorce lawyer&amp;#8221;) it&amp;#8217;s likely that I&amp;#8217;m looking for a certain product or service and actually want to see ads. When I want to see ads, Google makes it easy for me to do so: they&amp;#8217;re right there.&lt;/p&gt;
 &lt;p&gt;Now consider Facebook. When I don&amp;#8217;t want to see ads, Facebook makes it just as easy as Google for me to ignore them. Facebook&amp;#8217;s ads are similarly small, set to one side, and clearly labeled as advertisements. What about when I want to see ads? Facebook doesn&amp;#8217;t run a general purpose search engine, so they don&amp;#8217;t know when I&amp;#8217;m looking to buy flowers or get a divorce lawyer. (Maybe some day they&amp;#8217;ll figure out that my mom&amp;#8217;s birthday is coming up or that my spouse just cheated on me and posted video evidence of the infidelity to Facebook, but they&amp;#8217;re not quite there yet.) However, there are times when I find myself wanting to look at ads on Facebook: in the split-second after I click a link and I&amp;#8217;m waiting for the next page to load, I have nothing better to do so my eyes wander and I glance at the ads that I had previously ignored. Every once in a while I skim an ad that actually piques my interest. I want to know more, but by then it&amp;#8217;s too late. A new page has loaded, and with it a new ad. Perplexingly, hitting the &amp;#8216;Back&amp;#8217; button on my browser shows me the page I was previously on, but not the same ad that was previously on it. Yes, there have been Facebook ads compelling enough to make me interrupt my normal web browsing flow and go back a page on my browser just to give the ad a second look, and maybe even click on it, but Facebook chooses to show me a different ad instead.&lt;/p&gt;
 &lt;p&gt;Major Fail.&lt;/p&gt;</content>
