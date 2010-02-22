@@ -6,6 +6,7 @@
   <meta name="keywords" content="" />
   <link rel="stylesheet" href="/css/post.css" />
   <link rel="stylesheet" href="/css/sxr.css" />
+  <link rel="stylesheet" href="/css/pygments.css" />
   <script type="text/javascript" src="/js/jquery-all.js"></script>
   <script type="text/javascript" src="/js/sxr.js"></script>
   <title>Uncountably Many - Does pattern matching break encapsulation?</title>
@@ -122,7 +123,7 @@
 
 <h2>Conclusion</h2>
 
-<p>I don't want people to get me wrong: I love pattern matching. Practically every day I'm grateful that Scala has it. It makes certain kinds of programming problems much easier to solve. (I discuss the kinds of problems that benefit from pattern matching vs OO-style inheritance and virtual method dispatch <a href="http://stackoverflow.com/questions/563369/does-scalas-pattern-matching-violate-the-open-closed-principle">this StackOverflow question</a>.) However, library designers should be conscious of the implementation details they might be exposing if they're letting their users pattern match on sealed classes or singletons. Pattern matching can be very powerful, but as with many things in Scala: with great power comes great responsibility.</p>
+<p>I don't want people to get me wrong: I love pattern matching. Practically every day I'm grateful that Scala has it. It makes certain kinds of programming problems much easier to solve. (I discuss the kinds of problems that benefit from pattern matching vs OO-style inheritance and virtual method dispatch in a StackOverflow <a href="http://stackoverflow.com/questions/563369/does-scalas-pattern-matching-violate-the-open-closed-principle">question</a>.) However, library designers should be conscious of the implementation details they might be exposing if they're letting their users pattern match on sealed classes or singletons. Pattern matching can be very powerful, but as with many things in Scala: with great power comes great responsibility.</p>
         <div id="byline">&#8212; Jorge Ortiz</div>
 <div id="email"><a href="http://twitter.com/jorgeortiz85">@jorgeortiz85</a></div>
 

@@ -6,6 +6,7 @@
   <meta name="keywords" content="" />
   <link rel="stylesheet" href="/css/post.css" />
   <link rel="stylesheet" href="/css/sxr.css" />
+  <link rel="stylesheet" href="/css/pygments.css" />
   <script type="text/javascript" src="/js/jquery-all.js"></script>
   <script type="text/javascript" src="/js/sxr.js"></script>
   <title>Uncountably Many - Facebook Ads: Fail</title>
@@ -18,7 +19,34 @@
       <div id="inner" class="size">
         <h1>Facebook Ads: Fail</h1>
         <div id="dateline">01 Jan 2009</div>
-        <p>One of Facbeook&#8217;s monetizations strategies has been to imitate Google&#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&#8217;s search results. AdWords accounts for a large part of Google&#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&#8217;s ads work and Facebook&#8217;s ads fail, but today I just want to mention one particular failure on Facebook&#8217;s part: Facebook shows me ads when I don&#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.</p>
+        <div class="highlight"><pre><code class="ruby">    <span class="k">def</span> <span class="nf">foo</span>
+      <span class="nb">puts</span> <span class="s1">&#39;foo&#39;</span>
+    <span class="k">end</span>
+</code></pre>
+</div><div class="highlight"><pre><code class="java">    <span class="kd">interface</span> <span class="nc">Lock</span> <span class="o">{</span>
+      <span class="kt">void</span> <span class="nf">lock</span><span class="o">();</span>
+      <span class="kt">void</span> <span class="nf">lockInterruptibly</span><span class="o">();</span>
+      <span class="n">Condition</span> <span class="nf">newCondition</span><span class="o">();</span>
+      <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">();</span>
+      <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">);</span>
+      <span class="kt">void</span> <span class="nf">unlock</span><span class="o">();</span>
+    <span class="o">}</span>
+</code></pre>
+</div><div class="highlight"><pre><code class="scala">    <span class="k">trait</span> <span class="nc">Lock</span> <span class="o">{</span>
+      <span class="k">def</span> <span class="n">lock</span><span class="o">()</span><span class="k">:</span> <span class="kt">Unit</span>
+      <span class="k">def</span> <span class="n">unlock</span><span class="o">()</span><span class="k">:</span> <span class="kt">Unit</span>
+
+      <span class="k">def</span> <span class="n">apply</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">block</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="n">lock</span><span class="o">()</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">block</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="k">this</span><span class="o">.</span><span class="n">unlock</span><span class="o">()</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre>
+</div><p>One of Facbeook&#8217;s monetizations strategies has been to imitate Google&#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&#8217;s search results. AdWords accounts for a large part of Google&#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&#8217;s ads work and Facebook&#8217;s ads fail, but today I just want to mention one particular failure on Facebook&#8217;s part: Facebook shows me ads when I don&#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.</p>
 <p>First, consider Google. When I don&#8217;t want to see ads, Google makes it easy for me to ignore them. Google&#8217;s ads are small, text-only, set to one side, and are clearly labeled as advertisements. This empowerment to easily ignore ads keeps me happy as a user and coming back to Google for search. However, for certain search terms (like &#8220;flowers&#8221; or &#8220;divorce lawyer&#8221;) it&#8217;s likely that I&#8217;m looking for a certain product or service and actually want to see ads. When I want to see ads, Google makes it easy for me to do so: they&#8217;re right there.</p>
 <p>Now consider Facebook. When I don&#8217;t want to see ads, Facebook makes it just as easy as Google for me to ignore them. Facebook&#8217;s ads are similarly small, set to one side, and clearly labeled as advertisements. What about when I want to see ads? Facebook doesn&#8217;t run a general purpose search engine, so they don&#8217;t know when I&#8217;m looking to buy flowers or get a divorce lawyer. (Maybe some day they&#8217;ll figure out that my mom&#8217;s birthday is coming up or that my spouse just cheated on me and posted video evidence of the infidelity to Facebook, but they&#8217;re not quite there yet.) However, there are times when I find myself wanting to look at ads on Facebook: in the split-second after I click a link and I&#8217;m waiting for the next page to load, I have nothing better to do so my eyes wander and I glance at the ads that I had previously ignored. Every once in a while I skim an ad that actually piques my interest. I want to know more, but by then it&#8217;s too late. A new page has loaded, and with it a new ad. Perplexingly, hitting the &#8216;Back&#8217; button on my browser shows me the page I was previously on, but not the same ad that was previously on it. Yes, there have been Facebook ads compelling enough to make me interrupt my normal web browsing flow and go back a page on my browser just to give the ad a second look, and maybe even click on it, but Facebook chooses to show me a different ad instead.</p>
 <p>Major Fail.</p>

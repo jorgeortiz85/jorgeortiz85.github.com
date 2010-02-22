@@ -3,7 +3,7 @@
  <title>Uncountably Many</title>
  <link href="http://uncountablymany.com/atom.xml" rel="self"/>
  <link href="http://uncountablymany.com/"/>
- <updated>2010-02-15T13:06:01-08:00</updated>
+ <updated>2010-02-22T01:14:06-08:00</updated>
  <id>http://uncountablymany.com/</id>
  <author>
    <name>Jorge Ortiz</name>
@@ -119,7 +119,251 @@
 
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 
-&lt;p&gt;I don't want people to get me wrong: I love pattern matching. Practically every day I'm grateful that Scala has it. It makes certain kinds of programming problems much easier to solve. (I discuss the kinds of problems that benefit from pattern matching vs OO-style inheritance and virtual method dispatch &lt;a href=&quot;http://stackoverflow.com/questions/563369/does-scalas-pattern-matching-violate-the-open-closed-principle&quot;&gt;this StackOverflow question&lt;/a&gt;.) However, library designers should be conscious of the implementation details they might be exposing if they're letting their users pattern match on sealed classes or singletons. Pattern matching can be very powerful, but as with many things in Scala: with great power comes great responsibility.&lt;/p&gt;</content>
+&lt;p&gt;I don't want people to get me wrong: I love pattern matching. Practically every day I'm grateful that Scala has it. It makes certain kinds of programming problems much easier to solve. (I discuss the kinds of problems that benefit from pattern matching vs OO-style inheritance and virtual method dispatch in a StackOverflow &lt;a href=&quot;http://stackoverflow.com/questions/563369/does-scalas-pattern-matching-violate-the-open-closed-principle&quot;&gt;question&lt;/a&gt;.) However, library designers should be conscious of the implementation details they might be exposing if they're letting their users pattern match on sealed classes or singletons. Pattern matching can be very powerful, but as with many things in Scala: with great power comes great responsibility.&lt;/p&gt;</content>
+   <author>
+     <name>Jorge Ortiz</name>
+     <uri>http://uncountablymany.com</uri>
+   </author>
+ </entry>
+ 
+ <entry>
+   <title>Pimp My Lock: A case study in Scala API design</title>
+   <link href="http://uncountablymany.com/2009/07/07/pimp-my-lock.html"/>
+   <updated>2009-07-07T00:00:00-07:00</updated>
+   <id>http://uncountablymany.com/2009/07/07/pimp-my-lock</id>
+   <content type="html">&lt;p&gt;Josh Cough had an amusing article on &lt;a href=&quot;http://jackcoughonsoftware.blogspot.com/2009/06/pimp-vs-just-plain-fix-my-library.html&quot;&gt;pimping vs fixing libraries&lt;/a&gt;. He ran into an intolerable method in the Java standard libraries and decided to fix it with the &lt;a href=&quot;http://www.artima.com/weblogs/viewpost.jsp?thread=179766&quot;&gt;Pimp My Library&lt;/a&gt; pattern. Today I want to pimp a different Java library: Lock. Scala has higher-level ways of dealing with concurrency than Locks, but every now and then you need to get down with the nitty-gritty and do some manual locking. By Java standards, Lock is a pretty good library, but I wanted to see if Scala could do better.&lt;/p&gt;
+
+&lt;h2&gt;Basic Locks&lt;/h2&gt;
+
+&lt;p&gt;Here's what the Lock interface looks like in Java:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lockInterruptibly&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;Condition&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;newCondition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;As a first approximation, let's distill the basic features (&lt;code&gt;lock&lt;/code&gt;, &lt;code&gt;unlock&lt;/code&gt;) into a Scala trait:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;trait&lt;/span&gt; &lt;a title=&quot;trait Lock extends java.lang.Object&quot; id=&quot;7322&quot;&gt;Lock&lt;/a&gt; {
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7324&quot;&gt;lock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7325&quot;&gt;unlock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;Lock was introduced as a better alternative to Java's &lt;code&gt;synchronized&lt;/code&gt; keyword, but in the simple case it's actually worse. The recommended idiom for using Lock (straight from the &lt;a =href=&quot;http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/locks/Lock.html&quot;&gt;JavaDocs&lt;/a&gt;) looks like:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;n&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;// access the resource protected by this lock&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;finally&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Compare this to using &lt;code&gt;synchronized&lt;/code&gt; directly in Java:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;n&quot;&gt;Object&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;synchronized&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;// access the resource protected by this lock&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;What can go wrong when using &lt;code&gt;lock/unlock&lt;/code&gt;? You might forget to release a lock, causing deadlock. Or you might forget to release a lock inside a &lt;code&gt;finally&lt;/code&gt; clause, causing deadlock in when your code throws exceptions. Neither of these can happen when using &lt;code&gt;synchronized&lt;/code&gt;, since the lock is automatically released at the end of the synchronized block, and Java makes sure it's released even if an exception is thrown. With a little bit of Scala, we can fix these potential errors:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;trait&lt;/span&gt; &lt;a title=&quot;trait Lock extends java.lang.Object with ScalaObject&quot; id=&quot;7328&quot;&gt;Lock&lt;/a&gt; {
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7331&quot;&gt;lock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7332&quot;&gt;unlock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)T&quot; id=&quot;7333&quot;&gt;apply&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7335&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7338&quot;&gt;block&lt;/a&gt;: =&amp;gt; T): &lt;a href=&quot;#7335&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = {
+        &lt;a href=&quot;#7328&quot; title=&quot;Lock.this.type&quot; class=&quot;keyword&quot;&gt;this&lt;/a&gt;.&lt;a href=&quot;#7331&quot; title=&quot;()Unit&quot;&gt;lock&lt;/a&gt;()
+        &lt;span class=&quot;keyword&quot;&gt;try&lt;/span&gt; {
+          &lt;a href=&quot;#7338&quot; title=&quot;=&amp;gt; T&quot;&gt;block&lt;/a&gt;
+        } &lt;span class=&quot;keyword&quot;&gt;finally&lt;/span&gt; {
+          &lt;a href=&quot;#7328&quot; title=&quot;Lock.this.type&quot; class=&quot;keyword&quot;&gt;this&lt;/a&gt;.&lt;a href=&quot;#7332&quot; title=&quot;()Unit&quot;&gt;unlock&lt;/a&gt;()
+        }
+      }
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;In Scala, traits (unlike Java interfaces) can define methods. This means ANY Lock can take advantage of the method we just added, without having to reimplement it. Our &lt;code&gt;apply&lt;/code&gt; method is parametrized on type &lt;code&gt;T&lt;/code&gt;, which is just whatever type our block returns. The little arrow &lt;code&gt;=&gt;&lt;/code&gt; next to our &lt;code&gt;block&lt;/code&gt; parameter tells Scala to delay evaluation of the block until it is actually used. (This is called a &quot;by-name parameter&quot;.) This is critical, because it makes sure the block is only evaluated once we've acquired the lock. We've called our method &lt;code&gt;apply&lt;/code&gt; because that's the method Scala looks for when you try to use an object as a function. (In Scala, functions are objects and objects are functions.) Now the recommended usage idiom for Scala looks like this:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;val&lt;/span&gt; &lt;a title=&quot;PimpMyLock.ex2.Lock&quot; id=&quot;7341&quot;&gt;lock&lt;/a&gt;: &lt;a href=&quot;#7328&quot; title=&quot;PimpMyLock.ex2.Lock&quot;&gt;Lock&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+    &lt;a href=&quot;#7333&quot; title=&quot;(=&amp;gt; Unit)Unit&quot;&gt;lock&lt;/a&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// access the resource protected by this lock&lt;/span&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;This looks a lot like Java's baked-in support for synchronization, except we didn't need any language features built specifically for locks. Everything is &quot;Just A Library&quot;. We might want to go a little further and add &lt;code&gt;map&lt;/code&gt; and &lt;code&gt;foreach&lt;/code&gt; methods. Having these methods lets us use locks inside of for-comprehensions, which is useful when we want to compose locks with other classes than can also be used inside for-comprehensions. It turns out that &lt;code&gt;map&lt;/code&gt; is slightly more general than &lt;code&gt;apply&lt;/code&gt;, so we'll reimplement &lt;code&gt;apply&lt;/code&gt; in terms of &lt;code&gt;map&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;trait&lt;/span&gt; &lt;a title=&quot;trait Lock extends java.lang.Object with ScalaObject&quot; id=&quot;7346&quot;&gt;Lock&lt;/a&gt; {
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7349&quot;&gt;lock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7350&quot;&gt;unlock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T]((Lock.this.type) =&amp;gt; T)T&quot; id=&quot;7351&quot;&gt;map&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7353&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;(Lock.this.type) =&amp;gt; T&quot; id=&quot;7360&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; T): &lt;a href=&quot;#7353&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = {
+        &lt;a href=&quot;#7346&quot; title=&quot;Lock.this.type&quot; class=&quot;keyword&quot;&gt;this&lt;/a&gt;.&lt;a href=&quot;#7349&quot; title=&quot;()Unit&quot;&gt;lock&lt;/a&gt;()
+        &lt;span class=&quot;keyword&quot;&gt;try&lt;/span&gt; {
+          &lt;a href=&quot;#7360&quot; title=&quot;(Lock.this.type)T&quot; id=&quot;7230&quot;&gt;f&lt;/a&gt;(&lt;a href=&quot;#7346&quot; title=&quot;Lock.this.type&quot; class=&quot;keyword&quot;&gt;this&lt;/a&gt;)
+        } &lt;span class=&quot;keyword&quot;&gt;finally&lt;/span&gt; {
+          &lt;a href=&quot;#7346&quot; title=&quot;Lock.this.type&quot; class=&quot;keyword&quot;&gt;this&lt;/a&gt;.&lt;a href=&quot;#7350&quot; title=&quot;()Unit&quot;&gt;unlock&lt;/a&gt;()
+        }
+      }
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;((Lock.this.type) =&amp;gt; Unit)Unit&quot; id=&quot;7354&quot;&gt;foreach&lt;/a&gt;(&lt;a title=&quot;(Lock.this.type) =&amp;gt; Unit&quot; id=&quot;7361&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; Unit): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt; = &lt;a href=&quot;#7351&quot; title=&quot;((Lock.this.type) =&amp;gt; Unit)Unit&quot;&gt;map&lt;/a&gt;(&lt;a href=&quot;#7361&quot; title=&quot;(Lock.this.type) =&amp;gt; Unit&quot;&gt;f&lt;/a&gt;)
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)T&quot; id=&quot;7355&quot;&gt;apply&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7357&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7363&quot;&gt;block&lt;/a&gt;: =&amp;gt; T): &lt;a href=&quot;#7357&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = &lt;a href=&quot;#7351&quot; title=&quot;((Lock.this.type) =&amp;gt; T)T&quot;&gt;map&lt;/a&gt;(&lt;a title=&quot;Lock.this.type&quot; id=&quot;7373&quot;&gt;_&lt;/a&gt; =&amp;gt; &lt;a href=&quot;#7363&quot; title=&quot;=&amp;gt; T&quot;&gt;block&lt;/a&gt;)
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;Now we can use Locks inside for-comprehensions:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;val&lt;/span&gt; &lt;a title=&quot;PimpMyLock.ex4.Lock&quot; id=&quot;7376&quot;&gt;lock&lt;/a&gt;: &lt;a href=&quot;#7346&quot; title=&quot;PimpMyLock.ex4.Lock&quot;&gt;Lock&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+    &lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt;(&lt;a href=&quot;#7354&quot; title=&quot;((PimpMyLock.ex5.lock.type) =&amp;gt; Unit)Unit&quot; id=&quot;7380&quot;&gt;l&lt;/a&gt; &amp;lt;- &lt;a href=&quot;#7376&quot; title=&quot;=&amp;gt; PimpMyLock.ex4.Lock&quot;&gt;lock&lt;/a&gt;) &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// access the resource protected by this lock&lt;/span&gt;
+    }
+&lt;/pre&gt;
+
+&lt;h2&gt;Advanced Locks&lt;/h2&gt;
+
+&lt;code&gt;If Java's &lt;code&gt;Lock&lt;/code&gt; interface (added in Java 1.5) is worse than the built-in &lt;code&gt;synchronized&lt;/code&gt; (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:&lt;/code&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lockInterruptibly&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;It turns out the &lt;code&gt;synchronized&lt;/code&gt; keyword only has one way to acquire a lock: block the thread until you have the lock. This is a pretty forceful way to go about things, since the thread will block forever if the lock can't be acquired. The &lt;code&gt;Lock&lt;/code&gt; interface adds three more ways to acquire a lock: non-blocking (&lt;code&gt;tryLock&lt;/code&gt;), with a timeout (&lt;code&gt;tryLock(long,TimeUnit)&lt;/code&gt;), or interruptible (&lt;code&gt;lockInterruptibly&lt;/code&gt;). With all of these methods, lock acquisition can fail. Two of them return false if the lock can't be acquired, and the third throws an &lt;code&gt;InterruptedException&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;How can we support these different modes in our Scala Lock trait? We could certainly add the same three methods, just like Java. But then &lt;code&gt;map&lt;/code&gt;/&lt;code&gt;foreach&lt;/code&gt;/&lt;code&gt;apply&lt;/code&gt; are all fixed to use only one kind of acquisition strategy. One approach is to add lots more methods: &lt;ccode&gt;mapInterruptibly&lt;/ccode&gt;, &lt;code&gt;foreachInterruptibly&lt;/code&gt;, &lt;code&gt;applyInterruptibly&lt;/code&gt;, &lt;code&gt;mapTry&lt;/code&gt;, &lt;code&gt;foreachTry&lt;/code&gt;, &lt;code&gt;applyTry&lt;/code&gt;, etc. This quickly becomes a headache, and it defeats much of the point of adding these methods in the first place, which was to integrate with Scala's language features for &lt;code&gt;map&lt;/code&gt;/&lt;code&gt;foreach&lt;/code&gt;/&lt;code&gt;apply&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Another approach is to allow &quot;toggling&quot; between the different modes. Let's start with &lt;code&gt;lockInterruptibly&lt;/code&gt;, which has the same signature as lock. (In Java, the signatures are actually different, because &lt;code&gt;lockInterruptibly&lt;/code&gt; throws a checked &lt;code&gt;InterruptedException&lt;/code&gt;. In Scala, all exceptions are unchecked so the signatures are actually the same.) We can add a couple of methods to toggle between &quot;interruptible&quot; and &quot;uninterruptible&quot; modes:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;trait&lt;/span&gt; &lt;a title=&quot;trait Lock extends java.lang.Object with ScalaObject&quot; id=&quot;7382&quot;&gt;Lock&lt;/a&gt; {
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7385&quot;&gt;lock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7386&quot;&gt;unlock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T]((Lock.this.type) =&amp;gt; T)T&quot; id=&quot;7387&quot;&gt;map&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7389&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;(Lock.this.type) =&amp;gt; T&quot; id=&quot;7398&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; T): &lt;a href=&quot;#7389&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;((Lock.this.type) =&amp;gt; Unit)Unit&quot; id=&quot;7390&quot;&gt;foreach&lt;/a&gt;(&lt;a title=&quot;(Lock.this.type) =&amp;gt; Unit&quot; id=&quot;7399&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; Unit): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)T&quot; id=&quot;7391&quot;&gt;apply&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7393&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7400&quot;&gt;block&lt;/a&gt;: =&amp;gt; T): &lt;a href=&quot;#7393&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;=&amp;gt; PimpMyLock.ex6.Lock&quot; id=&quot;7394&quot;&gt;interruptible&lt;/a&gt;: &lt;a href=&quot;#7382&quot; title=&quot;PimpMyLock.ex6.Lock&quot;&gt;Lock&lt;/a&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;=&amp;gt; PimpMyLock.ex6.Lock&quot; id=&quot;7395&quot;&gt;uninterruptible&lt;/a&gt;: &lt;a href=&quot;#7382&quot; title=&quot;PimpMyLock.ex6.Lock&quot;&gt;Lock&lt;/a&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;Calling interruptible returns a view of the same underlying Lock, except that lock behaves like lockInterruptibly. Calling uninterruptible returns a Lock with the original default semantics. The benefit of reusing the Lock interface to mean different things (either interruptible or uninterruptible semantics) is that we can reuse the map/foreach/apply methods that we've already implemented for Lock. (Of course, the user still has to deal with catching any exceptions that might be thrown by an interruptible Lock... The Scala compiler won't complain when you've forgotten to catch an Exception, like the Java compiler does.)&lt;/p&gt;
+
+&lt;p&gt;But what do we do about the two tryLock methods? They return Boolean, not Unit, so we can't use them as drop-in replacements for lock. One approach is to add an attempt method to Lock that uses tryLock instead of lock:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;scala&quot;&gt;    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;attempt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;](&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;???&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;???&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The problem here is... what do we return? We'd like to return T, but we can't guarantee that. If tryLock fails, we don't have a T to return since we won't have run the block. We could try returning Unit:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;(=&amp;gt; Unit)Unit&quot; id=&quot;7404&quot;&gt;attempt&lt;/a&gt;(&lt;a title=&quot;=&amp;gt; Unit&quot; id=&quot;7406&quot;&gt;block&lt;/a&gt;: =&amp;gt; Unit): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;If the lock is acquired successfully, the block is run, otherwise it isn't run. But then we have no idea whether the block ran or not, and no way to run a different block in the case of failure to grab the lock. We could try propagating the Boolean:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;(=&amp;gt; Unit)Boolean&quot; id=&quot;7408&quot;&gt;attempt&lt;/a&gt;(&lt;a title=&quot;=&amp;gt; Unit&quot; id=&quot;7410&quot;&gt;block&lt;/a&gt;: =&amp;gt; Unit): &lt;span title=&quot;Boolean&quot;&gt;Boolean&lt;/span&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Then we can check the result of attempt to see if the block succeeded. If it didn't, we can execute another block. However, this means wrapping our call to attempt inside an if...else statement, which seems ugly. We also have no way to return a result from the block. We could try passing two different blocks:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)(=&amp;gt; T)T&quot; id=&quot;7430&quot;&gt;attempt&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7432&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7434&quot;&gt;block&lt;/a&gt;: =&amp;gt; T)(&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7435&quot;&gt;orElse&lt;/a&gt;: =&amp;gt; T): &lt;a href=&quot;#7432&quot; title=&quot;T&quot;&gt;T&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Now we can pass two blocks to attempt, one that gets called if the lock is acquired successfully, and one that gets called if the lock can't be acquired. Now we can always return a T. This is still kind of ugly though. Passing two different blocks side-by-side doesn't give us any indication of which is which. Also, every time we wanted to do nothing if the lock can't be acquired, we'd have to explicitly pass an empty block. This doesn't seem very clean.&lt;/p&gt;
+
+&lt;p&gt;The best approach is to return Option. Option is a class in the Scala standard library. It's commonly used in situation where some action might succeed and return a value, or fail and return nothing. It has two subclasses, Some (which wraps the value when it exists) or None (which indicates the absence of a value). Conveniently, it also has a getOrElse method which returns the wrapped value (if it exists) or executes an alternative block of code (if the value doesn't exist). We can define attempt in terms of Option:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)Option[T]&quot; id=&quot;7437&quot;&gt;attempt&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7439&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7441&quot;&gt;block&lt;/a&gt;: =&amp;gt; T): &lt;span title=&quot;Option[T]&quot;&gt;Option&lt;/span&gt;[T] = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;And use it like so:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;val&lt;/span&gt; &lt;a title=&quot;PimpMyLock.ex11.Lock&quot; id=&quot;7474&quot;&gt;lock&lt;/a&gt;: &lt;a href=&quot;#7473&quot; title=&quot;PimpMyLock.ex11.Lock&quot;&gt;Lock&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+    &lt;a href=&quot;#7474&quot; title=&quot;=&amp;gt; PimpMyLock.ex11.Lock&quot;&gt;lock&lt;/a&gt;.&lt;a href=&quot;#7437&quot; title=&quot;(=&amp;gt; Unit)Option[Unit]&quot;&gt;attempt&lt;/a&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// access the resource protected by this lock&lt;/span&gt;
+    } &lt;span title=&quot;(=&amp;gt; Unit)Unit&quot;&gt;getOrElse&lt;/span&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// execute some block if the lock can't be acquired&lt;/span&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;This neatly solves most of the concerns we had. If we don't care about the return value we can ignore it, if we do care we can access it. If we don't care about the &quot;or else&quot; condition, we don't have to include it, if we do care we can. However, we still face the explosion of methods for all the different locking modes. At the very least we'd need an attemptFor method which also takes a duration of time to wait to acquire the lock (using the other version of tryLock). Also, we wouldn't be able to use these locking modes inside for-comprehensions, because map/foreach are hard-wired to use lock (interruptible or uninterruptible versions).&lt;/p&gt;
+
+&lt;h2&gt;Better Abstractions&lt;/h2&gt;
+
+&lt;p&gt;The frustrating thing is that lock and tryLock are so similar, yet so different. They both try to acquire a lock. One can fail (return false), one can't (always returns (or throws an exception...)). For one, higher-order functions return T. For another, they return Option[T]. They're similar enough that we want the same kinds of abstractions for both, but different enough that we can't use the same abstraction. So why not use a different abstraction?&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;trait&lt;/span&gt; &lt;a title=&quot;trait TryingLock extends java.lang.Object with ScalaObject&quot; id=&quot;7508&quot;&gt;TryingLock&lt;/a&gt; {
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Boolean&quot; id=&quot;7539&quot;&gt;lock&lt;/a&gt;(): &lt;span title=&quot;Boolean&quot;&gt;Boolean&lt;/span&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;()Unit&quot; id=&quot;7540&quot;&gt;unlock&lt;/a&gt;(): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt;
+
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T]((TryingLock.this.type) =&amp;gt; T)Option[T]&quot; id=&quot;7541&quot;&gt;map&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7543&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;(TryingLock.this.type) =&amp;gt; T&quot; id=&quot;7551&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; T): &lt;span title=&quot;Option[T]&quot;&gt;Option&lt;/span&gt;[T] = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;((TryingLock.this.type) =&amp;gt; Unit)Unit&quot; id=&quot;7544&quot;&gt;foreach&lt;/a&gt;(&lt;a title=&quot;(TryingLock.this.type) =&amp;gt; Unit&quot; id=&quot;7552&quot;&gt;f&lt;/a&gt;: &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.&lt;span class=&quot;keyword&quot;&gt;type&lt;/span&gt; =&amp;gt; Unit): &lt;span title=&quot;Unit&quot;&gt;Unit&lt;/span&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+      &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;[T](=&amp;gt; T)Option[T]&quot; id=&quot;7545&quot;&gt;apply&lt;/a&gt;[&lt;a title=&quot;&amp;gt;: Nothing &amp;lt;: Any&quot; id=&quot;7547&quot;&gt;T&lt;/a&gt;](&lt;a title=&quot;=&amp;gt; T&quot; id=&quot;7553&quot;&gt;block&lt;/a&gt;: =&amp;gt; T): &lt;span title=&quot;Option[T]&quot;&gt;Option&lt;/span&gt;[T] = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;The differences between Lock and TryingLock reflect the different behaviors that lock modes might have. But they share fundamentally very similar abstractions. Now our attempt and attemptFor methods can both return TryingLocks:&lt;/p&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;=&amp;gt; PimpMyLock.ex12.TryingLock&quot; id=&quot;7528&quot;&gt;attempt&lt;/a&gt;: &lt;a href=&quot;#7508&quot; title=&quot;PimpMyLock.ex12.TryingLock&quot;&gt;TryingLock&lt;/a&gt;
+    &lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;a title=&quot;(PimpMyLock.ex12.Duration)PimpMyLock.ex12.TryingLock&quot; id=&quot;7529&quot;&gt;attemptFor&lt;/a&gt;(&lt;a title=&quot;PimpMyLock.ex12.Duration&quot; id=&quot;7548&quot;&gt;duration&lt;/a&gt;: &lt;span title=&quot;PimpMyLock.ex12.Duration&quot;&gt;Duration&lt;/a&gt;): &lt;a href=&quot;#7508&quot; title=&quot;PimpMyLock.ex12.TryingLock&quot;&gt;TryingLock&lt;/a&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;As with our interruptible and uninterruptible toggles, it's critically important that these methods return just views of the same underlying lock. They should merely &quot;toggle&quot; the mode we're using to access the underlying lock. Conveniently, our code example using attempt above works as-is with this newer version of attempt, thanks to TryingLock's apply method.&lt;/p&gt;
+
+&lt;h2&gt;The End Result&lt;/h2&gt;
+
+&lt;pre&gt;
+    &lt;span class=&quot;keyword&quot;&gt;val&lt;/span&gt; &lt;a title=&quot;PimpMyLock.ex12.Lock&quot; id=&quot;7509&quot;&gt;lock&lt;/a&gt;: &lt;a href=&quot;#7507&quot; title=&quot;PimpMyLock.ex12.Lock&quot;&gt;Lock&lt;/a&gt; = &lt;a href=&quot;#6782&quot; title=&quot;=&amp;gt; Nothing&quot;&gt;TODO&lt;/a&gt;
+
+    &lt;a href=&quot;#7523&quot; title=&quot;(=&amp;gt; Unit)Unit&quot;&gt;lock&lt;/a&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// uninterruptible access to shared resources&lt;/span&gt;
+    }
+
+    &lt;a href=&quot;#7509&quot; title=&quot;=&amp;gt; PimpMyLock.ex12.Lock&quot;&gt;lock&lt;/a&gt;.&lt;a href=&quot;#7523&quot; title=&quot;(=&amp;gt; Unit)Unit&quot;&gt;interruptible&lt;/a&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// interruptible access to shared resources&lt;/span&gt;
+    }
+
+    &lt;a href=&quot;#7509&quot; title=&quot;=&amp;gt; PimpMyLock.ex12.Lock&quot;&gt;lock&lt;/a&gt;.&lt;a href=&quot;#7545&quot; title=&quot;(=&amp;gt; Unit)Option[Unit]&quot;&gt;attempt&lt;/a&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// non-blocking attempt at access to shared resources&lt;/span&gt;
+    }
+
+    &lt;a href=&quot;#7509&quot; title=&quot;=&amp;gt; PimpMyLock.ex12.Lock&quot;&gt;lock&lt;/a&gt;.&lt;a href=&quot;#7545&quot; title=&quot;(=&amp;gt; Unit)Option[Unit]&quot;&gt;attemptFor&lt;/a&gt;(&lt;a href=&quot;#7504&quot; title=&quot;implicit PimpMyLock.ex12.RichInt : (Int)PimpMyLock.ex12.RichInt&quot; class=&quot;int&quot;&gt;10&lt;/a&gt;.&lt;a href=&quot;#7513&quot; title=&quot;=&amp;gt; PimpMyLock.ex12.Duration&quot;&gt;minutes&lt;/a&gt;) &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// blocking (with timeout) attempt at access to shared resources&lt;/span&gt;
+    } &lt;span title=&quot;(=&amp;gt; Unit)Unit&quot;&gt;getOrElse&lt;/span&gt; &lt;span title=&quot;Unit&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;comment&quot;&gt;// code to execute if attempt fails&lt;/span&gt;
+    }
+&lt;/pre&gt;
+
+&lt;p&gt;You can get the &lt;a href=&quot;http://github.com/joshcough/scala-parallel/tree/master&quot;&gt;source&lt;/a&gt; on Github. Enjoy!&lt;/p&gt;
+
+&lt;h3&gt;Update:&lt;/h2&gt;
+
+&lt;p&gt;As Miles Sabin points out, the abstractions I devoloped for Lock are all nested, yet one of the major motivations for Lock was non-nested locking disciplines like hand-over-hand locking and lock downgrading. I didn't want to neglect these use cases when I wrote my Lock trait, which is why the lock and unlock primitives are still available instead of buried as private methods. However, the majority of uses of Lock are probably nested, so in the spirit of making easy things easy and hard things possible, I thought it would be useful to provide nested access to Locks, as well as access to the non-nested lock and unlock primitives.&lt;/p&gt;</content>
    <author>
      <name>Jorge Ortiz</name>
      <uri>http://uncountablymany.com</uri>
@@ -131,7 +375,34 @@
    <link href="http://uncountablymany.com/2009/01/01/facebook-ads-fail.html"/>
    <updated>2009-01-01T00:00:00-08:00</updated>
    <id>http://uncountablymany.com/2009/01/01/facebook-ads-fail</id>
-   <content type="html">&lt;p&gt;One of Facbeook&amp;#8217;s monetizations strategies has been to imitate Google&amp;#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&amp;#8217;s search results. AdWords accounts for a large part of Google&amp;#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&amp;#8217;s ads work and Facebook&amp;#8217;s ads fail, but today I just want to mention one particular failure on Facebook&amp;#8217;s part: Facebook shows me ads when I don&amp;#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
+   <content type="html">&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;ruby&quot;&gt;    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;
+      &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;kd&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lockInterruptibly&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;Condition&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;newCondition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;long&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeUnit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;scala&quot;&gt;    &lt;span class=&quot;k&quot;&gt;trait&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
+
+      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;](&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;finally&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;p&gt;One of Facbeook&amp;#8217;s monetizations strategies has been to imitate Google&amp;#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&amp;#8217;s search results. AdWords accounts for a large part of Google&amp;#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&amp;#8217;s ads work and Facebook&amp;#8217;s ads fail, but today I just want to mention one particular failure on Facebook&amp;#8217;s part: Facebook shows me ads when I don&amp;#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
 &lt;p&gt;First, consider Google. When I don&amp;#8217;t want to see ads, Google makes it easy for me to ignore them. Google&amp;#8217;s ads are small, text-only, set to one side, and are clearly labeled as advertisements. This empowerment to easily ignore ads keeps me happy as a user and coming back to Google for search. However, for certain search terms (like &amp;#8220;flowers&amp;#8221; or &amp;#8220;divorce lawyer&amp;#8221;) it&amp;#8217;s likely that I&amp;#8217;m looking for a certain product or service and actually want to see ads. When I want to see ads, Google makes it easy for me to do so: they&amp;#8217;re right there.&lt;/p&gt;
 &lt;p&gt;Now consider Facebook. When I don&amp;#8217;t want to see ads, Facebook makes it just as easy as Google for me to ignore them. Facebook&amp;#8217;s ads are similarly small, set to one side, and clearly labeled as advertisements. What about when I want to see ads? Facebook doesn&amp;#8217;t run a general purpose search engine, so they don&amp;#8217;t know when I&amp;#8217;m looking to buy flowers or get a divorce lawyer. (Maybe some day they&amp;#8217;ll figure out that my mom&amp;#8217;s birthday is coming up or that my spouse just cheated on me and posted video evidence of the infidelity to Facebook, but they&amp;#8217;re not quite there yet.) However, there are times when I find myself wanting to look at ads on Facebook: in the split-second after I click a link and I&amp;#8217;m waiting for the next page to load, I have nothing better to do so my eyes wander and I glance at the ads that I had previously ignored. Every once in a while I skim an ad that actually piques my interest. I want to know more, but by then it&amp;#8217;s too late. A new page has loaded, and with it a new ad. Perplexingly, hitting the &amp;#8216;Back&amp;#8217; button on my browser shows me the page I was previously on, but not the same ad that was previously on it. Yes, there have been Facebook ads compelling enough to make me interrupt my normal web browsing flow and go back a page on my browser just to give the ad a second look, and maybe even click on it, but Facebook chooses to show me a different ad instead.&lt;/p&gt;
 &lt;p&gt;Major Fail.&lt;/p&gt;</content>

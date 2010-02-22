@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="description" content="" />
+  <meta name="keywords" content="" />
+  <link rel="stylesheet" href="/css/post.css" />
+  <link rel="stylesheet" href="/css/sxr.css" />
+  <link rel="stylesheet" href="/css/pygments.css" />
+  <script type="text/javascript" src="/js/jquery-all.js"></script>
+  <script type="text/javascript" src="/js/sxr.js"></script>
+  <title>Uncountably Many - Pimp My Lock: A case study in Scala API design</title>
+</head>
+<body class="style">
+  <div id="outer" class="style">
+			<div id="tools">
+				<a id="home-page" title="Home" href="/">Home</a>
+			</div>
+      <div id="inner" class="size">
+        <h1>Pimp My Lock: A case study in Scala API design</h1>
+        <div id="dateline">07 Jul 2009</div>
+        <p>Josh Cough had an amusing article on <a href="http://jackcoughonsoftware.blogspot.com/2009/06/pimp-vs-just-plain-fix-my-library.html">pimping vs fixing libraries</a>. He ran into an intolerable method in the Java standard libraries and decided to fix it with the <a href="http://www.artima.com/weblogs/viewpost.jsp?thread=179766">Pimp My Library</a> pattern. Today I want to pimp a different Java library: Lock. Scala has higher-level ways of dealing with concurrency than Locks, but every now and then you need to get down with the nitty-gritty and do some manual locking. By Java standards, Lock is a pretty good library, but I wanted to see if Scala could do better.</p>
+
+<h2>Basic Locks</h2>
+
+<p>Here's what the Lock interface looks like in Java:</p>
+
+<div class="highlight"><pre><code class="java">    <span class="kd">interface</span> <span class="nc">Lock</span> <span class="o">{</span>
+      <span class="kt">void</span> <span class="nf">lock</span><span class="o">();</span>
+      <span class="kt">void</span> <span class="nf">lockInterruptibly</span><span class="o">();</span>
+      <span class="n">Condition</span> <span class="nf">newCondition</span><span class="o">();</span>
+      <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">();</span>
+      <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">);</span>
+      <span class="kt">void</span> <span class="nf">unlock</span><span class="o">();</span>
+    <span class="o">}</span>
+</code></pre>
+</div>
+
+<p>As a first approximation, let's distill the basic features (<code>lock</code>, <code>unlock</code>) into a Scala trait:</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait Lock extends java.lang.Object" id="7322">Lock</a> {
+      <span class="keyword">def</span> <a title="()Unit" id="7324">lock</a>(): <span title="Unit">Unit</span>
+      <span class="keyword">def</span> <a title="()Unit" id="7325">unlock</a>(): <span title="Unit">Unit</span>
+    }
+</pre>
+
+<p>Lock was introduced as a better alternative to Java's <code>synchronized</code> keyword, but in the simple case it's actually worse. The recommended idiom for using Lock (straight from the <a =href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/locks/Lock.html">JavaDocs</a>) looks like:</p>
+
+<div class="highlight"><pre><code class="java">    <span class="n">Lock</span> <span class="n">l</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="n">l</span><span class="o">.</span><span class="na">lock</span><span class="o">();</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="c1">// access the resource protected by this lock</span>
+    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+      <span class="n">l</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
+    <span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Compare this to using <code>synchronized</code> directly in Java:</p>
+
+<div class="highlight"><pre><code class="java">    <span class="n">Object</span> <span class="n">lock</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="kd">synchronized</span><span class="o">(</span><span class="n">lock</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// access the resource protected by this lock</span>
+    <span class="o">}</span>
+</code></pre>
+</div>
+
+<p>What can go wrong when using <code>lock/unlock</code>? You might forget to release a lock, causing deadlock. Or you might forget to release a lock inside a <code>finally</code> clause, causing deadlock in when your code throws exceptions. Neither of these can happen when using <code>synchronized</code>, since the lock is automatically released at the end of the synchronized block, and Java makes sure it's released even if an exception is thrown. With a little bit of Scala, we can fix these potential errors:</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait Lock extends java.lang.Object with ScalaObject" id="7328">Lock</a> {
+      <span class="keyword">def</span> <a title="()Unit" id="7331">lock</a>(): <span title="Unit">Unit</span>
+      <span class="keyword">def</span> <a title="()Unit" id="7332">unlock</a>(): <span title="Unit">Unit</span>
+
+      <span class="keyword">def</span> <a title="[T](=&gt; T)T" id="7333">apply</a>[<a title="&gt;: Nothing &lt;: Any" id="7335">T</a>](<a title="=&gt; T" id="7338">block</a>: =&gt; T): <a href="#7335" title="T">T</a> = {
+        <a href="#7328" title="Lock.this.type" class="keyword">this</a>.<a href="#7331" title="()Unit">lock</a>()
+        <span class="keyword">try</span> {
+          <a href="#7338" title="=&gt; T">block</a>
+        } <span class="keyword">finally</span> {
+          <a href="#7328" title="Lock.this.type" class="keyword">this</a>.<a href="#7332" title="()Unit">unlock</a>()
+        }
+      }
+    }
+</pre>
+
+<p>In Scala, traits (unlike Java interfaces) can define methods. This means ANY Lock can take advantage of the method we just added, without having to reimplement it. Our <code>apply</code> method is parametrized on type <code>T</code>, which is just whatever type our block returns. The little arrow <code>=></code> next to our <code>block</code> parameter tells Scala to delay evaluation of the block until it is actually used. (This is called a "by-name parameter".) This is critical, because it makes sure the block is only evaluated once we've acquired the lock. We've called our method <code>apply</code> because that's the method Scala looks for when you try to use an object as a function. (In Scala, functions are objects and objects are functions.) Now the recommended usage idiom for Scala looks like this:</p>
+
+<pre>
+    <span class="keyword">val</span> <a title="PimpMyLock.ex2.Lock" id="7341">lock</a>: <a href="#7328" title="PimpMyLock.ex2.Lock">Lock</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+    <a href="#7333" title="(=&gt; Unit)Unit">lock</a> <span title="Unit">{</span>
+      <span class="comment">// access the resource protected by this lock</span>
+    }
+</pre>
+
+<p>This looks a lot like Java's baked-in support for synchronization, except we didn't need any language features built specifically for locks. Everything is "Just A Library". We might want to go a little further and add <code>map</code> and <code>foreach</code> methods. Having these methods lets us use locks inside of for-comprehensions, which is useful when we want to compose locks with other classes than can also be used inside for-comprehensions. It turns out that <code>map</code> is slightly more general than <code>apply</code>, so we'll reimplement <code>apply</code> in terms of <code>map</code>:</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait Lock extends java.lang.Object with ScalaObject" id="7346">Lock</a> {
+      <span class="keyword">def</span> <a title="()Unit" id="7349">lock</a>(): <span title="Unit">Unit</span>
+      <span class="keyword">def</span> <a title="()Unit" id="7350">unlock</a>(): <span title="Unit">Unit</span>
+
+      <span class="keyword">def</span> <a title="[T]((Lock.this.type) =&gt; T)T" id="7351">map</a>[<a title="&gt;: Nothing &lt;: Any" id="7353">T</a>](<a title="(Lock.this.type) =&gt; T" id="7360">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; T): <a href="#7353" title="T">T</a> = {
+        <a href="#7346" title="Lock.this.type" class="keyword">this</a>.<a href="#7349" title="()Unit">lock</a>()
+        <span class="keyword">try</span> {
+          <a href="#7360" title="(Lock.this.type)T" id="7230">f</a>(<a href="#7346" title="Lock.this.type" class="keyword">this</a>)
+        } <span class="keyword">finally</span> {
+          <a href="#7346" title="Lock.this.type" class="keyword">this</a>.<a href="#7350" title="()Unit">unlock</a>()
+        }
+      }
+      <span class="keyword">def</span> <a title="((Lock.this.type) =&gt; Unit)Unit" id="7354">foreach</a>(<a title="(Lock.this.type) =&gt; Unit" id="7361">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; Unit): <span title="Unit">Unit</span> = <a href="#7351" title="((Lock.this.type) =&gt; Unit)Unit">map</a>(<a href="#7361" title="(Lock.this.type) =&gt; Unit">f</a>)
+      <span class="keyword">def</span> <a title="[T](=&gt; T)T" id="7355">apply</a>[<a title="&gt;: Nothing &lt;: Any" id="7357">T</a>](<a title="=&gt; T" id="7363">block</a>: =&gt; T): <a href="#7357" title="T">T</a> = <a href="#7351" title="((Lock.this.type) =&gt; T)T">map</a>(<a title="Lock.this.type" id="7373">_</a> =&gt; <a href="#7363" title="=&gt; T">block</a>)
+    }
+</pre>
+
+<p>Now we can use Locks inside for-comprehensions:</p>
+
+<pre>
+    <span class="keyword">val</span> <a title="PimpMyLock.ex4.Lock" id="7376">lock</a>: <a href="#7346" title="PimpMyLock.ex4.Lock">Lock</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+    <span class="keyword">for</span>(<a href="#7354" title="((PimpMyLock.ex5.lock.type) =&gt; Unit)Unit" id="7380">l</a> &lt;- <a href="#7376" title="=&gt; PimpMyLock.ex4.Lock">lock</a>) <span title="Unit">{</span>
+      <span class="comment">// access the resource protected by this lock</span>
+    }
+</pre>
+
+<h2>Advanced Locks</h2>
+
+<code>If Java's <code>Lock</code> interface (added in Java 1.5) is worse than the built-in <code>synchronized</code> (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:</code>
+
+<div class="highlight"><pre><code class="java">    <span class="kt">void</span> <span class="nf">lockInterruptibly</span><span class="o">();</span>
+    <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">();</span>
+    <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">(</span><span class="kt">long</span> <span class="n">time</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">);</span>
+</code></pre>
+</div>
+
+<p>It turns out the <code>synchronized</code> keyword only has one way to acquire a lock: block the thread until you have the lock. This is a pretty forceful way to go about things, since the thread will block forever if the lock can't be acquired. The <code>Lock</code> interface adds three more ways to acquire a lock: non-blocking (<code>tryLock</code>), with a timeout (<code>tryLock(long,TimeUnit)</code>), or interruptible (<code>lockInterruptibly</code>). With all of these methods, lock acquisition can fail. Two of them return false if the lock can't be acquired, and the third throws an <code>InterruptedException</code>.</p>
+
+<p>How can we support these different modes in our Scala Lock trait? We could certainly add the same three methods, just like Java. But then <code>map</code>/<code>foreach</code>/<code>apply</code> are all fixed to use only one kind of acquisition strategy. One approach is to add lots more methods: <ccode>mapInterruptibly</ccode>, <code>foreachInterruptibly</code>, <code>applyInterruptibly</code>, <code>mapTry</code>, <code>foreachTry</code>, <code>applyTry</code>, etc. This quickly becomes a headache, and it defeats much of the point of adding these methods in the first place, which was to integrate with Scala's language features for <code>map</code>/<code>foreach</code>/<code>apply</code>.</p>
+
+<p>Another approach is to allow "toggling" between the different modes. Let's start with <code>lockInterruptibly</code>, which has the same signature as lock. (In Java, the signatures are actually different, because <code>lockInterruptibly</code> throws a checked <code>InterruptedException</code>. In Scala, all exceptions are unchecked so the signatures are actually the same.) We can add a couple of methods to toggle between "interruptible" and "uninterruptible" modes:</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait Lock extends java.lang.Object with ScalaObject" id="7382">Lock</a> {
+      <span class="keyword">def</span> <a title="()Unit" id="7385">lock</a>(): <span title="Unit">Unit</span>
+      <span class="keyword">def</span> <a title="()Unit" id="7386">unlock</a>(): <span title="Unit">Unit</span>
+
+      <span class="keyword">def</span> <a title="[T]((Lock.this.type) =&gt; T)T" id="7387">map</a>[<a title="&gt;: Nothing &lt;: Any" id="7389">T</a>](<a title="(Lock.this.type) =&gt; T" id="7398">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; T): <a href="#7389" title="T">T</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+      <span class="keyword">def</span> <a title="((Lock.this.type) =&gt; Unit)Unit" id="7390">foreach</a>(<a title="(Lock.this.type) =&gt; Unit" id="7399">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; Unit): <span title="Unit">Unit</span> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+      <span class="keyword">def</span> <a title="[T](=&gt; T)T" id="7391">apply</a>[<a title="&gt;: Nothing &lt;: Any" id="7393">T</a>](<a title="=&gt; T" id="7400">block</a>: =&gt; T): <a href="#7393" title="T">T</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+
+      <span class="keyword">def</span> <a title="=&gt; PimpMyLock.ex6.Lock" id="7394">interruptible</a>: <a href="#7382" title="PimpMyLock.ex6.Lock">Lock</a>
+      <span class="keyword">def</span> <a title="=&gt; PimpMyLock.ex6.Lock" id="7395">uninterruptible</a>: <a href="#7382" title="PimpMyLock.ex6.Lock">Lock</a>
+    }
+</pre>
+
+<p>Calling interruptible returns a view of the same underlying Lock, except that lock behaves like lockInterruptibly. Calling uninterruptible returns a Lock with the original default semantics. The benefit of reusing the Lock interface to mean different things (either interruptible or uninterruptible semantics) is that we can reuse the map/foreach/apply methods that we've already implemented for Lock. (Of course, the user still has to deal with catching any exceptions that might be thrown by an interruptible Lock... The Scala compiler won't complain when you've forgotten to catch an Exception, like the Java compiler does.)</p>
+
+<p>But what do we do about the two tryLock methods? They return Boolean, not Unit, so we can't use them as drop-in replacements for lock. One approach is to add an attempt method to Lock that uses tryLock instead of lock:</p>
+
+<div class="highlight"><pre><code class="scala">    <span class="k">def</span> <span class="n">attempt</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">block</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)</span><span class="k">:</span> <span class="kt">???</span> <span class="o">=</span> <span class="o">???</span>
+</code></pre>
+</div>
+
+<p>The problem here is... what do we return? We'd like to return T, but we can't guarantee that. If tryLock fails, we don't have a T to return since we won't have run the block. We could try returning Unit:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="(=&gt; Unit)Unit" id="7404">attempt</a>(<a title="=&gt; Unit" id="7406">block</a>: =&gt; Unit): <span title="Unit">Unit</span> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+</pre>
+
+<p>If the lock is acquired successfully, the block is run, otherwise it isn't run. But then we have no idea whether the block ran or not, and no way to run a different block in the case of failure to grab the lock. We could try propagating the Boolean:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="(=&gt; Unit)Boolean" id="7408">attempt</a>(<a title="=&gt; Unit" id="7410">block</a>: =&gt; Unit): <span title="Boolean">Boolean</span> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+</pre>
+
+<p>Then we can check the result of attempt to see if the block succeeded. If it didn't, we can execute another block. However, this means wrapping our call to attempt inside an if...else statement, which seems ugly. We also have no way to return a result from the block. We could try passing two different blocks:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="[T](=&gt; T)(=&gt; T)T" id="7430">attempt</a>[<a title="&gt;: Nothing &lt;: Any" id="7432">T</a>](<a title="=&gt; T" id="7434">block</a>: =&gt; T)(<a title="=&gt; T" id="7435">orElse</a>: =&gt; T): <a href="#7432" title="T">T</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+</pre>
+
+<p>Now we can pass two blocks to attempt, one that gets called if the lock is acquired successfully, and one that gets called if the lock can't be acquired. Now we can always return a T. This is still kind of ugly though. Passing two different blocks side-by-side doesn't give us any indication of which is which. Also, every time we wanted to do nothing if the lock can't be acquired, we'd have to explicitly pass an empty block. This doesn't seem very clean.</p>
+
+<p>The best approach is to return Option. Option is a class in the Scala standard library. It's commonly used in situation where some action might succeed and return a value, or fail and return nothing. It has two subclasses, Some (which wraps the value when it exists) or None (which indicates the absence of a value). Conveniently, it also has a getOrElse method which returns the wrapped value (if it exists) or executes an alternative block of code (if the value doesn't exist). We can define attempt in terms of Option:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="[T](=&gt; T)Option[T]" id="7437">attempt</a>[<a title="&gt;: Nothing &lt;: Any" id="7439">T</a>](<a title="=&gt; T" id="7441">block</a>: =&gt; T): <span title="Option[T]">Option</span>[T] = <a href="#6782" title="=&gt; Nothing">TODO</a>
+</pre>
+
+<p>And use it like so:</p>
+
+<pre>
+    <span class="keyword">val</span> <a title="PimpMyLock.ex11.Lock" id="7474">lock</a>: <a href="#7473" title="PimpMyLock.ex11.Lock">Lock</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+    <a href="#7474" title="=&gt; PimpMyLock.ex11.Lock">lock</a>.<a href="#7437" title="(=&gt; Unit)Option[Unit]">attempt</a> <span title="Unit">{</span>
+      <span class="comment">// access the resource protected by this lock</span>
+    } <span title="(=&gt; Unit)Unit">getOrElse</span> <span title="Unit">{</span>
+      <span class="comment">// execute some block if the lock can't be acquired</span>
+    }
+</pre>
+
+<p>This neatly solves most of the concerns we had. If we don't care about the return value we can ignore it, if we do care we can access it. If we don't care about the "or else" condition, we don't have to include it, if we do care we can. However, we still face the explosion of methods for all the different locking modes. At the very least we'd need an attemptFor method which also takes a duration of time to wait to acquire the lock (using the other version of tryLock). Also, we wouldn't be able to use these locking modes inside for-comprehensions, because map/foreach are hard-wired to use lock (interruptible or uninterruptible versions).</p>
+
+<h2>Better Abstractions</h2>
+
+<p>The frustrating thing is that lock and tryLock are so similar, yet so different. They both try to acquire a lock. One can fail (return false), one can't (always returns (or throws an exception...)). For one, higher-order functions return T. For another, they return Option[T]. They're similar enough that we want the same kinds of abstractions for both, but different enough that we can't use the same abstraction. So why not use a different abstraction?</p>
+
+<pre>
+    <span class="keyword">trait</span> <a title="trait TryingLock extends java.lang.Object with ScalaObject" id="7508">TryingLock</a> {
+      <span class="keyword">def</span> <a title="()Boolean" id="7539">lock</a>(): <span title="Boolean">Boolean</span>
+      <span class="keyword">def</span> <a title="()Unit" id="7540">unlock</a>(): <span title="Unit">Unit</span>
+
+      <span class="keyword">def</span> <a title="[T]((TryingLock.this.type) =&gt; T)Option[T]" id="7541">map</a>[<a title="&gt;: Nothing &lt;: Any" id="7543">T</a>](<a title="(TryingLock.this.type) =&gt; T" id="7551">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; T): <span title="Option[T]">Option</span>[T] = <a href="#6782" title="=&gt; Nothing">TODO</a>
+      <span class="keyword">def</span> <a title="((TryingLock.this.type) =&gt; Unit)Unit" id="7544">foreach</a>(<a title="(TryingLock.this.type) =&gt; Unit" id="7552">f</a>: <span class="keyword">this</span>.<span class="keyword">type</span> =&gt; Unit): <span title="Unit">Unit</span> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+      <span class="keyword">def</span> <a title="[T](=&gt; T)Option[T]" id="7545">apply</a>[<a title="&gt;: Nothing &lt;: Any" id="7547">T</a>](<a title="=&gt; T" id="7553">block</a>: =&gt; T): <span title="Option[T]">Option</span>[T] = <a href="#6782" title="=&gt; Nothing">TODO</a>
+    }
+</pre>
+
+<p>The differences between Lock and TryingLock reflect the different behaviors that lock modes might have. But they share fundamentally very similar abstractions. Now our attempt and attemptFor methods can both return TryingLocks:</p>
+
+<pre>
+    <span class="keyword">def</span> <a title="=&gt; PimpMyLock.ex12.TryingLock" id="7528">attempt</a>: <a href="#7508" title="PimpMyLock.ex12.TryingLock">TryingLock</a>
+    <span class="keyword">def</span> <a title="(PimpMyLock.ex12.Duration)PimpMyLock.ex12.TryingLock" id="7529">attemptFor</a>(<a title="PimpMyLock.ex12.Duration" id="7548">duration</a>: <span title="PimpMyLock.ex12.Duration">Duration</a>): <a href="#7508" title="PimpMyLock.ex12.TryingLock">TryingLock</a>
+</pre>
+
+<p>As with our interruptible and uninterruptible toggles, it's critically important that these methods return just views of the same underlying lock. They should merely "toggle" the mode we're using to access the underlying lock. Conveniently, our code example using attempt above works as-is with this newer version of attempt, thanks to TryingLock's apply method.</p>
+
+<h2>The End Result</h2>
+
+<pre>
+    <span class="keyword">val</span> <a title="PimpMyLock.ex12.Lock" id="7509">lock</a>: <a href="#7507" title="PimpMyLock.ex12.Lock">Lock</a> = <a href="#6782" title="=&gt; Nothing">TODO</a>
+
+    <a href="#7523" title="(=&gt; Unit)Unit">lock</a> <span title="Unit">{</span>
+      <span class="comment">// uninterruptible access to shared resources</span>
+    }
+
+    <a href="#7509" title="=&gt; PimpMyLock.ex12.Lock">lock</a>.<a href="#7523" title="(=&gt; Unit)Unit">interruptible</a> <span title="Unit">{</span>
+      <span class="comment">// interruptible access to shared resources</span>
+    }
+
+    <a href="#7509" title="=&gt; PimpMyLock.ex12.Lock">lock</a>.<a href="#7545" title="(=&gt; Unit)Option[Unit]">attempt</a> <span title="Unit">{</span>
+      <span class="comment">// non-blocking attempt at access to shared resources</span>
+    }
+
+    <a href="#7509" title="=&gt; PimpMyLock.ex12.Lock">lock</a>.<a href="#7545" title="(=&gt; Unit)Option[Unit]">attemptFor</a>(<a href="#7504" title="implicit PimpMyLock.ex12.RichInt : (Int)PimpMyLock.ex12.RichInt" class="int">10</a>.<a href="#7513" title="=&gt; PimpMyLock.ex12.Duration">minutes</a>) <span title="Unit">{</span>
+      <span class="comment">// blocking (with timeout) attempt at access to shared resources</span>
+    } <span title="(=&gt; Unit)Unit">getOrElse</span> <span title="Unit">{</span>
+      <span class="comment">// code to execute if attempt fails</span>
+    }
+</pre>
+
+<p>You can get the <a href="http://github.com/joshcough/scala-parallel/tree/master">source</a> on Github. Enjoy!</p>
+
+<h3>Update:</h2>
+
+<p>As Miles Sabin points out, the abstractions I devoloped for Lock are all nested, yet one of the major motivations for Lock was non-nested locking disciplines like hand-over-hand locking and lock downgrading. I didn't want to neglect these use cases when I wrote my Lock trait, which is why the lock and unlock primitives are still available instead of buried as private methods. However, the majority of uses of Lock are probably nested, so in the spirit of making easy things easy and hard things possible, I thought it would be useful to provide nested access to Locks, as well as access to the non-nested lock and unlock primitives.</p>
+        <div id="byline">&#8212; Jorge Ortiz</div>
+<div id="email"><a href="http://twitter.com/jorgeortiz85">@jorgeortiz85</a></div>
+
+      </div>
+  </div>
+</body>
+</html>
