@@ -2,9 +2,6 @@ function fullUri(ref, query) {
 	var loc = /^([^\?#]+)/.exec(location.href)[1];
 	return ref ? loc + (query ? "?id=" : "#") + $(ref).attr("id") : loc;
 }
-function updateExportUri(ref) {
-	$("#export span.src").text(fullUri(ref, true))
-}
 var last_def = false;
 function scrollTo(def) {
 	$(window).scrollTo( def, 300, { 
@@ -17,7 +14,6 @@ function scrollTo(def) {
 				document.location = "#" + def.attr("id");
 			}
 			last_def = def;
-			updateExportUri(def);
 		}, axis: "y"
 	});
 	return false;
@@ -75,20 +71,6 @@ $(window).load(function() {
 		if (id)	// redirect to #id if given id param
 			window.location = fullUri($("#" + id[1]));
 
-		var exp = $(
-			'<div class="tool" id="export">' +
-			'<code>&lt;iframe src="<span class="src">path-to-source</span>" width="<span class="width">700</span>"' +
-			' height="<span class="height">500</span>" frameborder="0"&gt; &lt;/iframe&gt;</code>' +
-			'</div>'
-		);
-		var exp_control = $('<div class="tool" id="export-control"><a href="#">Export</a></div>');
-		$("body").append(exp).append(exp_control);
-		
-		updateExportUri(location.hash);
-		exp_control.show().click( function() {
-			exp.slideToggle("fast");
-			return false;
-		});
 		$(window).resize(sizeUpdate = function() {
 			exp.find("span.width").text(window.innerWidth || document.documentElement.clientWidth);
 			exp.find("span.height").text(window.innerHeight || document.documentElement.clientWidth);
