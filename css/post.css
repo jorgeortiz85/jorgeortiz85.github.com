@@ -33,12 +33,11 @@
 }
 
 #home-page{
-  background: url(http://jorgeortiz85.github.com/images/home.png) no-repeat left top;
+  background: url(http://uncountablymany.com/images/home.png) no-repeat left top;
 }
 
 #outer {
   display: block;
-	position: absolute;
 	top: 0;
 	left: 0;
 	z-index: 250000;

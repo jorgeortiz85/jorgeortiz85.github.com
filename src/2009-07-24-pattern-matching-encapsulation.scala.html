@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+			<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>2009-07-24-pattern-matching-encapsulation.scala</title>
+        <script type="text/javascript" src="jquery-all.js"></script>
+        <script type="text/javascript" src="linked.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css" title="Style">
+    </head>
+    <body>
+        <pre>
+<span class="keyword">object</span> <a title="object PatternMatchingEncapsulation" id="8681">PatternMatchingEncapsulation</a> <span title="ScalaObject">{</span>
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex1" id="8692">ex1</a> <span title="ScalaObject">{</span>
+    <span class="keyword">def</span> <a title="(n: Int)Int" id="10148">fib</a>(<a title="Int" id="10151">n</a>: <span title="Int">Int</span>): <span title="Int">Int</span> = <a href="#10151" title="Int">n</a> <span title="Int" class="keyword">match</span> {
+      <span title="Int(0)" class="keyword">case</span> <span title="Int(0)" class="int">0</span> =&gt; <span title="Int(0)" class="int">0</span>
+      <span title="Int(1)" class="keyword">case</span> <span title="Int(1)" class="int">1</span> =&gt; <span title="Int(1)" class="int">1</span>
+      <span title="Int" class="keyword">case</span> <a title="Int" id="10205">n</a> =&gt; <a href="#10148" title="(n: Int)Int">fib</a><a title="(x$1: Int)Int" id="3403">(</a><a href="#10205" title="(x$1: Int)Int">n</a>-<span title="Int(1)" class="int">1</span>) + <a href="#10148" title="(n: Int)Int">fib</a>(<a href="#10205" title="(x$1: Int)Int">n</a>-<span title="Int(2)" class="int">2</span>)
+    }
+  }
+  
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex2" id="8694">ex2</a> <span title="ScalaObject">{</span>
+    <span class="keyword">trait</span> <a title="trait Point extends java.lang.Object" id="13643">Point</a>
+    case <span class="keyword">class</span> <a title="class CartesianPoint extends java.lang.Object with PatternMatchingEncapsulation.ex2.Point with ScalaObject with Product" id="13778">CartesianPoint</a><span title="ScalaObject">(</span><a title="=&gt; Double" id="14025">x</a>: <span title="Double">Double</span>, <a title="=&gt; Double" id="14026">y</a>: <span title="Double">Double</span>) <span class="keyword">extends</span> <a href="#13643" title="PatternMatchingEncapsulation.ex2.Point">Point</a>
+
+    <span class="keyword">def</span> <a title="(point: PatternMatchingEncapsulation.ex2.Point)Boolean" id="13647">isSpecial</a>(<a title="PatternMatchingEncapsulation.ex2.Point" id="13970">point</a>: <a href="#13643" title="PatternMatchingEncapsulation.ex2.Point">Point</a>): <span title="Boolean">Boolean</span> = <a href="#13970" title="PatternMatchingEncapsulation.ex2.Point">point</a> <span title="Boolean" class="keyword">match</span> {
+      <span title="Boolean(true)" class="keyword">case</span> CartesianPoint(<a title="Double" id="14000">x</a>, <a title="Double" id="14001">y</a>) <span class="keyword">if</span> <a href="#14000" title="(x$1: Double)Double">x</a><span title="(x$1: Double)Double">*</span><a href="#14000" title="Double">x</a> <span title="(x$1: Double)Boolean">+</span> <a href="#14001" title="(x$1: Double)Double">y</a>*<a href="#14001" title="Double">y</a> &gt; <span title="Double(25.0)" class="double">25.0</span> =&gt; <span title="Boolean(true)" class="keyword">true</span>
+      <span title="Boolean(false)" class="keyword">case</span> _ =&gt; <span title="Boolean(false)" class="keyword">false</span>
+    }
+  }
+  
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex3" id="8696">ex3</a> <span title="ScalaObject">{</span>
+    <span class="keyword">trait</span> <a title="trait Point extends java.lang.Object" id="14032">Point</a>
+    case <span class="keyword">class</span> <a title="class PolarPoint extends java.lang.Object with PatternMatchingEncapsulation.ex3.Point with ScalaObject with Product" id="14075">PolarPoint</a><span title="ScalaObject">(</span><a title="=&gt; Double" id="14420">radius</a>: <span title="Double">Double</span>, <a title="=&gt; Double" id="14421">theta</a>: <span title="Double">Double</span>) <span class="keyword">extends</span> <a href="#14032" title="PatternMatchingEncapsulation.ex3.Point">Point</a>
+
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex3.CartesianPoint" id="14036">CartesianPoint</a> <span title="ScalaObject">{</span>
+      <span class="keyword">def</span> <a title="(x: Double,y: Double)PatternMatchingEncapsulation.ex3.Point" id="14119">apply</a>(<a title="Double" id="14123">x</a>: <span title="Double">Double</span>, <a title="Double" id="14124">y</a>: <span title="Double">Double</span>): <a href="#14032" title="PatternMatchingEncapsulation.ex3.Point">Point</a> = {
+        <span class="keyword">val</span> <a title="Double" id="14126">radius</a> = <span title="object Math">Math</span>.<a title="(x: Double)Double" id="11635">sqrt</a>(<a href="#14123" title="(x$1: Double)Double">x</a><span title="(x$1: Double)Double">*</span><a href="#14123" title="Double">x</a> + <a href="#14124" title="(x$1: Double)Double">y</a>*<a href="#14124" title="Double">y</a>)
+        <span class="keyword">val</span> <a title="Double" id="14127">theta</a> =
+          <span title="Double" class="keyword">if</span> (<a href="#14123" title="(x$1: Double)Boolean">x</a> <span title="(x$1: Boolean)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> &amp;&amp; <a href="#14124" title="(x$1: Double)Boolean">y</a> == <span title="Double(0.0)" class="double">0.0</span>) <span title="Double(0.0)" class="double">0.0</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#14123" title="(x$1: Double)Boolean">x</a> <span title="(x$1: Boolean)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> &amp;&amp; <a href="#14124" title="(x$1: Double)Boolean">y</a> &gt; <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="(x$1: Int)Double">Pi</span>/<span title="Int(2)" class="int">2</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#14123" title="(x$1: Double)Boolean">x</a> <span title="(x$1: Boolean)Boolean">==</span> <span title="Double(0.0)" class="double">0.0</span> &amp;&amp; <a href="#14124" title="(x$1: Double)Boolean">y</a> &lt; <span title="Double(0.0)" class="double">0.0</span>) <span title="(x$1: Double)Double" class="int">3</span><span title="(x$1: Int)Double">*</span><span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span>/<span title="Int(2)" class="int">2</span>
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#14123" title="(x$1: Int)Boolean">x</a> <span title="(x$1: Boolean)Boolean">&gt;</span> <span title="Int(0)" class="int">0</span> &amp;&amp; <a href="#14124" title="(x$1: Double)Boolean" id="4017">y</a> &gt;= <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="(x: Double)Double">atan</span>(<a href="#14124" title="(x$1: Double)Double">y</a>/<a href="#14123" title="Double">x</a>)
+          <span class="keyword">else</span> <span title="Double" class="keyword">if</span> (<a href="#14123" title="(x$1: Int)Boolean">x</a> <span title="(x$1: Boolean)Boolean">&gt;</span> <span title="Int(0)" class="int">0</span> &amp;&amp; <a href="#14124" title="(x$1: Double)Boolean">y</a> &lt; <span title="Double(0.0)" class="double">0.0</span>) <span title="object Math">Math</span>.<span title="(x: Double)Double">atan</span><span title="(x$1: Double)Double">(</span><a href="#14124" title="(x$1: Double)Double">y</a>/<a href="#14123" title="Double">x</a>) + <span title="(x$1: Double)Double" class="int">2</span>*<span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span>
+          <span class="keyword">else</span> <span title="object Math">Math</span>.<span title="(x: Double)Double">atan</span><span title="(x$1: Double)Double">(</span><a href="#14124" title="(x$1: Double)Double">y</a>/<a href="#14123" title="Double">x</a>) + <span title="object Math">Math</span>.<span title="=&gt; Double">Pi</span>
+        <a href="#14075" title="(radius: Double,theta: Double)PatternMatchingEncapsulation.ex3.PolarPoint">PolarPoint</a>(<a href="#14126" title="Double">radius</a>, <a href="#14127" title="Double">theta</a>)
+      }
+      <span class="keyword">def</span> <a title="(point: PatternMatchingEncapsulation.ex3.Point)Option[(Double, Double)]" id="14120">unapply</a>(<a title="PatternMatchingEncapsulation.ex3.Point" id="14434">point</a>: <a href="#14032" title="PatternMatchingEncapsulation.ex3.Point">Point</a>) = <a href="#14434" title="PatternMatchingEncapsulation.ex3.Point">point</a> <span title="Option[(Double, Double)]" class="keyword">match</span> {
+        <span title="Some[(Double, Double)]" class="keyword">case</span> PolarPoint(<a title="Double" id="14437">r</a>, <a title="Double" id="14438">th</a>) =&gt;
+          <span title="(x: (Double, Double))Some[(Double, Double)]">Some</span>(<span title="(_1: Double,_2: Double)(Double, Double)">(</span><a href="#14437" title="(x$1: Double)Double">r</a>*<span title="object Math">Math</span>.<a title="(x: Double)Double" id="11617">cos</a>(<a href="#14438" title="Double">th</a>), <a href="#14437" title="(x$1: Double)Double">r</a>*<span title="object Math">Math</span>.<a title="(x: Double)Double" id="11615">sin</a>(<a href="#14438" title="Double">th</a>)))
+        <span title="None.type" class="keyword">case</span> _ =&gt;
+          <span title="object None">None</span>
+      }
+    }
+  }
+  
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex4" id="8698">ex4</a> <span title="ScalaObject">{</span>
+    <span class="keyword">def</span> <a title="[T](xs: List[T])T" id="14534">head</a>[<a title="&gt;: Nothing &lt;: Any" id="14536">T</a>](<a title="List[T]" id="14539">xs</a>: <span title="List[T]">List</span>[T]): <a href="#14536" title="T">T</a> = <a href="#14539" title="List[T]">xs</a> <span title="T" class="keyword">match</span> {
+      <span title="T" class="keyword">case</span> <a title="T" id="14736">hd</a> :: <a title="List[T]" id="14737">tl</a> =&gt; <a href="#14736" title="T">hd</a>
+    }
+  }
+  
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex5" id="8700">ex5</a> <span title="ScalaObject">{</span>
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex5.:/:" id="14740">:/:</a> <span title="ScalaObject">{</span>
+      <span class="keyword">def</span> <a title="[T](xs: List[T])Option[(T, List[T])]" id="14748">unapply</a>[<a title="&gt;: Nothing &lt;: Any" id="14750">T</a>](<a title="List[T]" id="14753">xs</a>: <span title="List[T]">List</span>[T]) =
+        <span title="Option[(T, List[T])]" class="keyword">if</span> (<a href="#14753" title="List[T]">xs</a>.<span title="=&gt; Boolean">isEmpty</span>) <span title="object None">None</span>
+        <span class="keyword">else</span> <span title="(x: (T, List[T]))Some[(T, List[T])]">Some</span><span title="(_1: T,_2: List[T])(T, List[T])">(</span><a href="#14753" title="List[T]">xs</a>.<a title="=&gt; T" id="10680">head</a>, <a href="#14753" title="List[T]">xs</a>.<a title="=&gt; List[T]" id="10837">tail</a>)
+    }
+
+    <span class="keyword">def</span> <a title="[T](xs: List[T])T" id="14742">customHead</a>[<a title="&gt;: Nothing &lt;: Any" id="14744">T</a>](<a title="List[T]" id="14789">xs</a>: <span title="List[T]">List</span>[T]): <a href="#14744" title="T">T</a> = <a href="#14789" title="List[T]">xs</a> <span title="T" class="keyword">match</span> {
+      <span title="T" class="keyword">case</span> <a title="T" id="14816">hd</a> <a href="#14748" title="(xs: List[T])Option[(T, List[T])]">:/:</a> <a title="List[T]" id="14817">tl</a> =&gt; <a href="#14816" title="T">hd</a>
+    }
+  }
+  
+  <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex6" id="8702">ex6</a> <span title="ScalaObject">{</span>
+    <span class="keyword">object</span> <a title="object PatternMatchingEncapsulation.ex6.MyNil" id="14819">MyNil</a> <span title="ScalaObject">{</span>
+      <span class="keyword">def</span> <a title="[T](xs: List[T])Boolean" id="14827">unapply</a>[<a title="&gt;: Nothing &lt;: Any" id="14829">T</a>](<a title="List[T]" id="14832">xs</a>: <span title="List[T]">List</span>[T]): <span title="Boolean">Boolean</span> =
+        <span title="Boolean" class="keyword">if</span> (<a href="#14832" title="List[T]">xs</a>.<span title="=&gt; Boolean">isEmpty</span>) <span title="Boolean(true)" class="keyword">true</span>
+        <span class="keyword">else</span> <span title="Boolean(false)" class="keyword">false</span>
+    }
+
+    <span class="keyword">def</span> <a title="[T](xs: List[T])Boolean" id="14821">empty</a>[<a title="&gt;: Nothing &lt;: Any" id="14823">T</a>](<a title="List[T]" id="14835">xs</a>: <span title="List[T]">List</span>[T]): <span title="Boolean">Boolean</span> = <a href="#14835" title="List[T]">xs</a> <span title="Boolean" class="keyword">match</span> {
+      <span title="Boolean(true)" class="keyword">case</span> <a href="#14827" title="(xs: List[T])Boolean">MyNil</a>() =&gt; <span title="Boolean(true)" class="keyword">true</span>
+      <span title="Boolean(false)" class="keyword">case</span> _ =&gt; <span title="Boolean(false)" class="keyword">false</span>
+    }
+  }
+}
+
+        </pre>
+    </body>
+</html>
