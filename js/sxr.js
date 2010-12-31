@@ -33,7 +33,7 @@ $(function() {
 		function() { return scrollTo($(this).definition()); }
 	);
 	
-	$('[title]').live("mouseover", function() {
+	$('[title][noqtip!=true]').live("mouseover", function() {
 		if ($(this).data('qtip') !== 'object') {
 			$(this).qtip({
 				style: {

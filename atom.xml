@@ -3,7 +3,7 @@
  <title>Uncountably Many</title>
  <link href="http://uncountablymany.com/atom.xml" rel="self"/>
  <link href="http://uncountablymany.com/"/>
- <updated>2010-02-22T01:42:11-08:00</updated>
+ <updated>2010-12-31T01:06:03-06:00</updated>
  <id>http://uncountablymany.com/</id>
  <author>
    <name>Jorge Ortiz</name>
@@ -11,9 +11,54 @@
  </author>
  
  <entry>
+   <title>Feeds and Flows</title>
+   <link href="http://uncountablymany.com/2010/12/28/feeds-and-flows.html"/>
+   <updated>2010-12-28T00:00:00-06:00</updated>
+   <id>http://uncountablymany.com/2010/12/28/feeds-and-flows</id>
+   <content type="html">&lt;p&gt;Feeds are everywhere these days. The most famous feeds are Twitter's Timeline and Facebook's News Feed, but every new social or real-time app includes one or more feeds as key parts of their product. Feeds might seem like a new trend, but they've actually been around for a while. I'd argue that chat rooms, IM conversations, and email inboxes are all examples of feeds that predate Facebook or Twitter. Despite their popularity and importance, I've yet to see any attempts to classify different feeds or even to develop a common vocabulary about the characteristics of feeds. I'll attempt this below, by classifying feeds based on two characteristics: &lt;em&gt;source&lt;/em&gt; and &lt;em&gt;focus&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2&gt;Source and Focus&lt;/h2&gt;
+
+&lt;p&gt;A feed's &lt;em&gt;source&lt;/em&gt; is where new content appears when it is published to the feed. A &lt;em&gt;top-sourced&lt;/em&gt; feed publishes new content at the top of the feed, whereas a &lt;em&gt;bottom-sourced&lt;/em&gt; one publishes it at the bottom of the feed. When new content is published to a feed, the feed must decide where in the feed to &lt;em&gt;focus&lt;/em&gt; on given the new content. In a &lt;em&gt;top-focused&lt;/em&gt; feed, focus stays at the top of the feed (regardless of where new content is published), whereas a &lt;em&gt;bottom-focused&lt;/em&gt; feed keeps focus on the bottom of the feed (also regardless of where new content is published). Together, the source and the focus determine the &lt;em&gt;flow&lt;/em&gt; of the feed.&lt;/p&gt;
+
+&lt;h2&gt;Flows&lt;/h2&gt;
+
+&lt;p&gt;The most famous flow&amp;mdash;&lt;em&gt;reverse chronological&lt;/em&gt; or &lt;em&gt;&lt;strong&gt;reverse chron&lt;/strong&gt;&lt;/em&gt;&amp;mdash;is a top-sourced and top-focused flow. It is top-sourced because new content appears at the top of the feed, and it is top-focused because when new content appears (typically by refreshing the page), focus stays at the top of the feed. Reverse chron is the standard flow for blog home pages, the standard Timeline View on twitter.com, the Facebook News Feed, most email inboxes, and SMS interfaces on at least some phones (old Nokia phones come to mind).&lt;/p&gt;
+
+&lt;p&gt;Another common flow&amp;mdash;which I'll call &lt;em&gt;&lt;strong&gt;chat flow&lt;/strong&gt;&lt;/em&gt; for lack of a better name&amp;mdash;is the bottom-sourced and bottom-focused flow. In this flow, new content appears at the bottom of the feed, where focus also stays. This is the flow typically used for chat rooms, IM conversations, the Unix &lt;code&gt;tail -f &lt;/code&gt; command, and SMS interfaces on at least some phones (most notably the iPhone and Blackberry Messenger).&lt;/p&gt;
+
+&lt;p&gt;Less common&amp;mdash;and as-yet unnamed, but I'll call it the &lt;em&gt;&lt;strong&gt;third flow&lt;/strong&gt;&lt;/em&gt;&amp;mdash;is the top-sourced, bottom-focused flow, where content appears at the top, but focus stays at the bottom. Notable examples of this flow are the Tweetie for Mac and Twitter for iPhone (née Tweetie for iPhone) apps. In these apps, focus stays on the last tweet you read (roughly, the &quot;bottom&quot; of the feed) and new tweets appear at the top of the feed, without moving the focus.&lt;/p&gt;
+
+&lt;p&gt;The last flow&amp;mdash;which I can probably call &lt;em&gt;chronological&lt;/em&gt; or &lt;em&gt;&lt;strong&gt;chron&lt;/strong&gt;&lt;/em&gt; for symmetry&amp;mdash;is the bottom-sourced, top-focused flow. This flow is probably the one that has been in use the longest (think of a standard list of historical events), but isn't commonly used in social/real-time apps. The one example I can think of is the Facebook Birthday Feed.&lt;/p&gt;
+
+&lt;h2&gt;Observations&lt;/h2&gt;
+
+&lt;p&gt;Despite being a very primitive way to classify feeds, this gives us a vocabulary to talk about them and a framework to think about them. For example, flows where the source and the focus are the same (reverse chron and chat flow) give importance to recent content at the possible expense of missing older content, whereas flows where the source and focus are different (chron and third flow) prioritize reading all the content at the expense of not being immediately aware of when new content is published.&lt;/p&gt;
+
+&lt;p&gt;Given that they both emphasize recency, why choose reverse chron over chat flow or vice versa? Chat flow has the advantage of presenting content in chronological order, so if several entries in the feed are related their order makes it natural to read them in top-down languages like English. Reverse chron, on the other hand, discourages reading related items in chronological order. This discouragement is probably fine for unrelated blog posts, but contributes to the awkwardness of reading conversations on Twitter. So why do blogs, Twitter, and Facebook choose reverse chron over chat flow? I suspect the nature of the web discourages the use of chat flow; it's unnatural to make content flow upward in HTML. (Indeed, the examples of chat flow that I can think of are all native apps, or web apps trying to mimic native apps.) Twitter might also have been mimicking the SMS interfaces of the time.&lt;/p&gt;
+
+&lt;p&gt;What about reverse chron versus third flow? &lt;a href=&quot;http://twitter.com/#!/CodyBrown/status/26369114875&quot;&gt;Proponents&lt;/a&gt; of reverse chron like its focus on recency, but all of us who lack the discipline of Inbox Zero have had the experience of losing track of an important email because it fell too far down our inbox feed. Tweetie seems to have chosen third flow as a direct response to the weaknesses of reverse chron, making it much easier to read every Tweet. Depending on your &lt;a href=&quot;http://twitterisntemail.com/&quot;&gt;approach to Twitter&lt;/a&gt;, this is either a boon or a mistake.&lt;/p&gt;
+
+&lt;p&gt;Likewise, Facebook seems to have found reverse chron to be inadequate for its Birthday Feed. From a technical standpoint, it would have been easier for them to insert birthdays into the regular News Feed, but from a product standpoint it would have been a mistake. If N days before a birthday Facebook inserted a birthday notification into the News Feed, it would fall down the feed (become less prominent) as time passed and the birthday got closer. They could conceivably bump birthday notifications the top of the feed with every passing day, but then they would be trying to swim upstream, which seems unnatural. Chron flow solves these problems: new items (birthdays N days away) appear at the bottom of the feed (least prominent), and as birthdays get closer they rise up the feed (becoming more prominent).&lt;/p&gt;
+
+&lt;h2&gt;Open Questions&lt;/h2&gt;
+
+&lt;p&gt;This discussion focused solely on vertical time-based feeds. Are there non-vertical feeds? Are there feeds that aren't organized based on time? What other characteristics of feeds should we pay attention to? (Some that come to mind: When do items get added to a feed? When do items get removed from a feed?) Are there more nuanced differences between reverse chron and chat flow? Does anyone else use third flow? Did I miss any prominent examples of the other flows?&lt;/p&gt;
+
+&lt;p&gt;If you have answers to any of these questions, &lt;a href=&quot;mailto:jorge.ortiz@gmail.com&quot;&gt;let me know&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- &lt;p&gt;This post arose out of a series of conversations with &lt;a href=&quot;http://twitter.com/lehrblogger&quot;&gt;Steven Lehrburger&lt;/a&gt;.&lt;/p&gt; --&gt;
+</content>
+   <author>
+     <name>Jorge Ortiz</name>
+     <uri>http://uncountablymany.com</uri>
+   </author>
+ </entry>
+ 
+ <entry>
    <title>Does pattern matching break encapsulation?</title>
    <link href="http://uncountablymany.com/2009/07/24/pattern-matching-encapsulation.html"/>
-   <updated>2009-07-24T00:00:00-07:00</updated>
+   <updated>2009-07-24T00:00:00-05:00</updated>
    <id>http://uncountablymany.com/2009/07/24/pattern-matching-encapsulation</id>
    <content type="html">&lt;p&gt;Scala attempts to unify functional and object-oriented programming. One of the concepts that Scala borrows from functional programming is &lt;em&gt;pattern matching&lt;/em&gt;.&lt;/p&gt;
 
@@ -129,7 +174,7 @@
  <entry>
    <title>Pimp My Lock: A case study in Scala API design</title>
    <link href="http://uncountablymany.com/2009/07/07/pimp-my-lock.html"/>
-   <updated>2009-07-07T00:00:00-07:00</updated>
+   <updated>2009-07-07T00:00:00-05:00</updated>
    <id>http://uncountablymany.com/2009/07/07/pimp-my-lock</id>
    <content type="html">&lt;p&gt;Josh Cough had an amusing article on &lt;a href=&quot;http://jackcoughonsoftware.blogspot.com/2009/06/pimp-vs-just-plain-fix-my-library.html&quot;&gt;pimping vs fixing libraries&lt;/a&gt;. He ran into an intolerable method in the Java standard libraries and decided to fix it with the &lt;a href=&quot;http://www.artima.com/weblogs/viewpost.jsp?thread=179766&quot;&gt;Pimp My Library&lt;/a&gt; pattern. Today I want to pimp a different Java library: Lock. Scala has higher-level ways of dealing with concurrency than Locks, but every now and then you need to get down with the nitty-gritty and do some manual locking. By Java standards, Lock is a pretty good library, but I wanted to see if Scala could do better.&lt;/p&gt;
 
@@ -236,7 +281,7 @@
 
 &lt;h2&gt;Advanced Locks&lt;/h2&gt;
 
-&lt;code&gt;If Java's &lt;code&gt;Lock&lt;/code&gt; interface (added in Java 1.5) is worse than the built-in &lt;code&gt;synchronized&lt;/code&gt; (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:&lt;/code&gt;
+&lt;p&gt;If Java's &lt;code&gt;Lock&lt;/code&gt; interface (added in Java 1.5) is worse than the built-in &lt;code&gt;synchronized&lt;/code&gt; (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:&lt;/p&gt;
 
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;java&quot;&gt;    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;lockInterruptibly&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
     &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tryLock&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
@@ -361,7 +406,7 @@
 
 &lt;p&gt;You can get the &lt;a href=&quot;http://github.com/joshcough/scala-parallel/tree/master&quot;&gt;source&lt;/a&gt; on Github. Enjoy!&lt;/p&gt;
 
-&lt;h3&gt;Update:&lt;/h2&gt;
+&lt;h3&gt;Update:&lt;/h3&gt;
 
 &lt;p&gt;As Miles Sabin points out, the abstractions I devoloped for Lock are all nested, yet one of the major motivations for Lock was non-nested locking disciplines like hand-over-hand locking and lock downgrading. I didn't want to neglect these use cases when I wrote my Lock trait, which is why the lock and unlock primitives are still available instead of buried as private methods. However, the majority of uses of Lock are probably nested, so in the spirit of making easy things easy and hard things possible, I thought it would be useful to provide nested access to Locks, as well as access to the non-nested lock and unlock primitives.&lt;/p&gt;</content>
    <author>
@@ -373,11 +418,14 @@
  <entry>
    <title>Facebook Ads: Fail</title>
    <link href="http://uncountablymany.com/2009/01/01/facebook-ads-fail.html"/>
-   <updated>2009-01-01T00:00:00-08:00</updated>
+   <updated>2009-01-01T00:00:00-06:00</updated>
    <id>http://uncountablymany.com/2009/01/01/facebook-ads-fail</id>
-   <content type="html">&lt;p&gt;One of Facbeook&amp;#8217;s monetizations strategies has been to imitate Google&amp;#8217;s very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google&amp;#8217;s search results. AdWords accounts for a large part of Google&amp;#8217;s considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google&amp;#8217;s ads work and Facebook&amp;#8217;s ads fail, but today I just want to mention one particular failure on Facebook&amp;#8217;s part: Facebook shows me ads when I don&amp;#8217;t want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
-&lt;p&gt;First, consider Google. When I don&amp;#8217;t want to see ads, Google makes it easy for me to ignore them. Google&amp;#8217;s ads are small, text-only, set to one side, and are clearly labeled as advertisements. This empowerment to easily ignore ads keeps me happy as a user and coming back to Google for search. However, for certain search terms (like &amp;#8220;flowers&amp;#8221; or &amp;#8220;divorce lawyer&amp;#8221;) it&amp;#8217;s likely that I&amp;#8217;m looking for a certain product or service and actually want to see ads. When I want to see ads, Google makes it easy for me to do so: they&amp;#8217;re right there.&lt;/p&gt;
-&lt;p&gt;Now consider Facebook. When I don&amp;#8217;t want to see ads, Facebook makes it just as easy as Google for me to ignore them. Facebook&amp;#8217;s ads are similarly small, set to one side, and clearly labeled as advertisements. What about when I want to see ads? Facebook doesn&amp;#8217;t run a general purpose search engine, so they don&amp;#8217;t know when I&amp;#8217;m looking to buy flowers or get a divorce lawyer. (Maybe some day they&amp;#8217;ll figure out that my mom&amp;#8217;s birthday is coming up or that my spouse just cheated on me and posted video evidence of the infidelity to Facebook, but they&amp;#8217;re not quite there yet.) However, there are times when I find myself wanting to look at ads on Facebook: in the split-second after I click a link and I&amp;#8217;m waiting for the next page to load, I have nothing better to do so my eyes wander and I glance at the ads that I had previously ignored. Every once in a while I skim an ad that actually piques my interest. I want to know more, but by then it&amp;#8217;s too late. A new page has loaded, and with it a new ad. Perplexingly, hitting the &amp;#8216;Back&amp;#8217; button on my browser shows me the page I was previously on, but not the same ad that was previously on it. Yes, there have been Facebook ads compelling enough to make me interrupt my normal web browsing flow and go back a page on my browser just to give the ad a second look, and maybe even click on it, but Facebook chooses to show me a different ad instead.&lt;/p&gt;
+   <content type="html">&lt;p&gt;One of Facbeook's monetizations strategies has been to imitate Google's very successful AdWords program, which places small, targeted, and unobtrusive text ads next to Google's search results. AdWords accounts for a large part of Google's considerable revenues, but Facebook has not enjoyed similar success with their own ads. There are many reasons why Google's ads work and Facebook's ads fail, but today I just want to mention one particular failure on Facebook's part: Facebook shows me ads when I don't want to see them, and when I do want to see ads Facebook makes it impossible for me to do so.&lt;/p&gt;
+
+&lt;p&gt;First, consider Google. When I don't want to see ads, Google makes it easy for me to ignore them. Google's ads are small, text-only, set to one side, and are clearly labeled as advertisements. This empowerment to easily ignore ads keeps me happy as a user and coming back to Google for search. However, for certain search terms (like &quot;flowers&quot; or &quot;divorce lawyer&quot;) it's likely that I'm looking for a certain product or service and actually want to see ads. When I want to see ads, Google makes it easy for me to do so: they're right there.&lt;/p&gt;
+
+&lt;p&gt;Now consider Facebook. When I don't want to see ads, Facebook makes it just as easy as Google for me to ignore them. Facebook's ads are similarly small, set to one side, and clearly labeled as advertisements. What about when I want to see ads? Facebook doesn't run a general purpose search engine, so they don't know when I'm looking to buy flowers or get a divorce lawyer. (Maybe some day they'll figure out that my mom's birthday is coming up or that my spouse just cheated on me and posted video evidence of the infidelity to Facebook, but they're not quite there yet.) However, there are times when I find myself wanting to look at ads on Facebook: in the split-second after I click a link and I'm waiting for the next page to load, I have nothing better to do so my eyes wander and I glance at the ads that I had previously ignored. Every once in a while I skim an ad that actually piques my interest. I want to know more, but by then it's too late. A new page has loaded, and with it a new ad. Perplexingly, hitting the 'Back' button on my browser shows me the page I was previously on, but not the same ad that was previously on it. Yes, there have been Facebook ads compelling enough to make me interrupt my normal web browsing flow and go back a page on my browser just to give the ad a second look, and maybe even click on it, but Facebook chooses to show me a different ad instead.&lt;/p&gt;
+
 &lt;p&gt;Major Fail.&lt;/p&gt;</content>
    <author>
      <name>Jorge Ortiz</name>

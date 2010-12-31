@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="description" content="" />
+  <meta name="keywords" content="" />
+  <link rel="stylesheet" href="/css/post.css" />
+  <link rel="stylesheet" href="/css/sxr.css" />
+  <link rel="stylesheet" href="/css/pygments.css" />
+  <script type="text/javascript" src="/js/jquery-all.js"></script>
+  <script type="text/javascript" src="/js/sxr.js"></script>
+  <link rel="alternate" type="application/atom+xml" title="Uncountably Many - Atom" href="http://feeds.feedburner.com/UncountablyMany" />
+  <title>Uncountably Many - Feeds and Flows</title>
+</head>
+<body class="style">
+  <div id="outer" class="style">
+			<div id="tools">
+        <a id="home-png" title="Home" noqtip="true" href="/">Home</a>
+        <a id="email-png" title="Email" noqtip="true" href="mailto:jorge.ortiz@gmail.com">jorge.ortiz@gmail.com</a>
+			</div>
+      <div id="inner" class="size">
+        <h1>Feeds and Flows</h1>
+        <div id="dateline">28 Dec 2010</div>
+        <p>Feeds are everywhere these days. The most famous feeds are Twitter's Timeline and Facebook's News Feed, but every new social or real-time app includes one or more feeds as key parts of their product. Feeds might seem like a new trend, but they've actually been around for a while. I'd argue that chat rooms, IM conversations, and email inboxes are all examples of feeds that predate Facebook or Twitter. Despite their popularity and importance, I've yet to see any attempts to classify different feeds or even to develop a common vocabulary about the characteristics of feeds. I'll attempt this below, by classifying feeds based on two characteristics: <em>source</em> and <em>focus</em>.</p>
+
+<h2>Source and Focus</h2>
+
+<p>A feed's <em>source</em> is where new content appears when it is published to the feed. A <em>top-sourced</em> feed publishes new content at the top of the feed, whereas a <em>bottom-sourced</em> one publishes it at the bottom of the feed. When new content is published to a feed, the feed must decide where in the feed to <em>focus</em> on given the new content. In a <em>top-focused</em> feed, focus stays at the top of the feed (regardless of where new content is published), whereas a <em>bottom-focused</em> feed keeps focus on the bottom of the feed (also regardless of where new content is published). Together, the source and the focus determine the <em>flow</em> of the feed.</p>
+
+<h2>Flows</h2>
+
+<p>The most famous flow&mdash;<em>reverse chronological</em> or <em><strong>reverse chron</strong></em>&mdash;is a top-sourced and top-focused flow. It is top-sourced because new content appears at the top of the feed, and it is top-focused because when new content appears (typically by refreshing the page), focus stays at the top of the feed. Reverse chron is the standard flow for blog home pages, the standard Timeline View on twitter.com, the Facebook News Feed, most email inboxes, and SMS interfaces on at least some phones (old Nokia phones come to mind).</p>
+
+<p>Another common flow&mdash;which I'll call <em><strong>chat flow</strong></em> for lack of a better name&mdash;is the bottom-sourced and bottom-focused flow. In this flow, new content appears at the bottom of the feed, where focus also stays. This is the flow typically used for chat rooms, IM conversations, the Unix <code>tail -f </code> command, and SMS interfaces on at least some phones (most notably the iPhone and Blackberry Messenger).</p>
+
+<p>Less common&mdash;and as-yet unnamed, but I'll call it the <em><strong>third flow</strong></em>&mdash;is the top-sourced, bottom-focused flow, where content appears at the top, but focus stays at the bottom. Notable examples of this flow are the Tweetie for Mac and Twitter for iPhone (née Tweetie for iPhone) apps. In these apps, focus stays on the last tweet you read (roughly, the "bottom" of the feed) and new tweets appear at the top of the feed, without moving the focus.</p>
+
+<p>The last flow&mdash;which I can probably call <em>chronological</em> or <em><strong>chron</strong></em> for symmetry&mdash;is the bottom-sourced, top-focused flow. This flow is probably the one that has been in use the longest (think of a standard list of historical events), but isn't commonly used in social/real-time apps. The one example I can think of is the Facebook Birthday Feed.</p>
+
+<h2>Observations</h2>
+
+<p>Despite being a very primitive way to classify feeds, this gives us a vocabulary to talk about them and a framework to think about them. For example, flows where the source and the focus are the same (reverse chron and chat flow) give importance to recent content at the possible expense of missing older content, whereas flows where the source and focus are different (chron and third flow) prioritize reading all the content at the expense of not being immediately aware of when new content is published.</p>
+
+<p>Given that they both emphasize recency, why choose reverse chron over chat flow or vice versa? Chat flow has the advantage of presenting content in chronological order, so if several entries in the feed are related their order makes it natural to read them in top-down languages like English. Reverse chron, on the other hand, discourages reading related items in chronological order. This discouragement is probably fine for unrelated blog posts, but contributes to the awkwardness of reading conversations on Twitter. So why do blogs, Twitter, and Facebook choose reverse chron over chat flow? I suspect the nature of the web discourages the use of chat flow; it's unnatural to make content flow upward in HTML. (Indeed, the examples of chat flow that I can think of are all native apps, or web apps trying to mimic native apps.) Twitter might also have been mimicking the SMS interfaces of the time.</p>
+
+<p>What about reverse chron versus third flow? <a href="http://twitter.com/#!/CodyBrown/status/26369114875">Proponents</a> of reverse chron like its focus on recency, but all of us who lack the discipline of Inbox Zero have had the experience of losing track of an important email because it fell too far down our inbox feed. Tweetie seems to have chosen third flow as a direct response to the weaknesses of reverse chron, making it much easier to read every Tweet. Depending on your <a href="http://twitterisntemail.com/">approach to Twitter</a>, this is either a boon or a mistake.</p>
+
+<p>Likewise, Facebook seems to have found reverse chron to be inadequate for its Birthday Feed. From a technical standpoint, it would have been easier for them to insert birthdays into the regular News Feed, but from a product standpoint it would have been a mistake. If N days before a birthday Facebook inserted a birthday notification into the News Feed, it would fall down the feed (become less prominent) as time passed and the birthday got closer. They could conceivably bump birthday notifications the top of the feed with every passing day, but then they would be trying to swim upstream, which seems unnatural. Chron flow solves these problems: new items (birthdays N days away) appear at the bottom of the feed (least prominent), and as birthdays get closer they rise up the feed (becoming more prominent).</p>
+
+<h2>Open Questions</h2>
+
+<p>This discussion focused solely on vertical time-based feeds. Are there non-vertical feeds? Are there feeds that aren't organized based on time? What other characteristics of feeds should we pay attention to? (Some that come to mind: When do items get added to a feed? When do items get removed from a feed?) Are there more nuanced differences between reverse chron and chat flow? Does anyone else use third flow? Did I miss any prominent examples of the other flows?</p>
+
+<p>If you have answers to any of these questions, <a href="mailto:jorge.ortiz@gmail.com">let me know</a>.</p>
+
+<!-- <p>This post arose out of a series of conversations with <a href="http://twitter.com/lehrblogger">Steven Lehrburger</a>.</p> -->
+
+        <div id="byline">&#8212; Jorge Ortiz</div>
+<div id="email"><a href="http://twitter.com/jorgeortiz85">@jorgeortiz85</a></div>
+
+      </div>
+  </div>
+  <script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+  <script type="text/javascript">
+    try {
+    var pageTracker = _gat._getTracker("UA-1148213-7");
+    pageTracker._trackPageview();
+    } catch(err) {}
+  </script>
+</body>
+</html>

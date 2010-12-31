@@ -54,6 +54,7 @@
 #inner h1 {
   display: block;
 	width: 100%;
+	min-width: 800px;
 	font-size: 3.8em;
 	margin-bottom: 1em;
 }

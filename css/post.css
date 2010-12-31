@@ -22,7 +22,7 @@
   display:block;
   height:34px;
   margin-bottom:8px;
-  opacity:0.4;
+  opacity:0.7;
   overflow:hidden;
   text-indent:-99999px;
 }
@@ -32,8 +32,12 @@
   filter:alpha(opacity=100);
 }
 
-#home-page{
+#home-png{
   background: url(http://uncountablymany.com/images/home.png) no-repeat left top;
+}
+
+#email-png{
+  background: url(http://uncountablymany.com/images/email.png) no-repeat left top;
 }
 
 #outer {
@@ -76,7 +80,20 @@
   display: block;
 	width: 100%;
 	border-bottom: 1px solid #333;
+	font-size: 1.3em;
+	line-height: 100%;
+}
+
+#inner h2 {
 	font-size: 1.2em;
+}
+
+#inner h3 {
+	font-size: 1.0em;
+}
+
+#inner p {
+  font-size: 0.9em;
 }
 
 #inner blockquote {
@@ -124,4 +141,11 @@
 .size {
 	width: 70%;
 	font-size: 18px;
+}
+
+#inner .javadoc {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.8em;
+  margin-left: 1em;
+  margin-right: 1em;
 }

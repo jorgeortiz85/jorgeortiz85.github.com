@@ -15,7 +15,7 @@ pre, code {
 .float { color: blue; }
 .long { color: #008080; }
 .int { color: #008080; }
-.comment { color: gray; font-style: italic; }
+.comment { color: DimGray; font-style: italic; }
 
 /* to highlight a reference or definition */
 :target, .highlighted

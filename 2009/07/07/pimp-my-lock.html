@@ -9,12 +9,14 @@
   <link rel="stylesheet" href="/css/pygments.css" />
   <script type="text/javascript" src="/js/jquery-all.js"></script>
   <script type="text/javascript" src="/js/sxr.js"></script>
+  <link rel="alternate" type="application/atom+xml" title="Uncountably Many - Atom" href="http://feeds.feedburner.com/UncountablyMany" />
   <title>Uncountably Many - Pimp My Lock: A case study in Scala API design</title>
 </head>
 <body class="style">
   <div id="outer" class="style">
 			<div id="tools">
-				<a id="home-page" title="Home" href="/">Home</a>
+        <a id="home-png" title="Home" noqtip="true" href="/">Home</a>
+        <a id="email-png" title="Email" noqtip="true" href="mailto:jorge.ortiz@gmail.com">jorge.ortiz@gmail.com</a>
 			</div>
       <div id="inner" class="size">
         <h1>Pimp My Lock: A case study in Scala API design</h1>
@@ -124,7 +126,7 @@
 
 <h2>Advanced Locks</h2>
 
-<code>If Java's <code>Lock</code> interface (added in Java 1.5) is worse than the built-in <code>synchronized</code> (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:</code>
+<p>If Java's <code>Lock</code> interface (added in Java 1.5) is worse than the built-in <code>synchronized</code> (since Java 1.0?), then why was it added? The answer is that we've forgotten about all the other methods on Lock, namely:</p>
 
 <div class="highlight"><pre><code class="java">    <span class="kt">void</span> <span class="nf">lockInterruptibly</span><span class="o">();</span>
     <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">();</span>
@@ -249,7 +251,7 @@
 
 <p>You can get the <a href="http://github.com/joshcough/scala-parallel/tree/master">source</a> on Github. Enjoy!</p>
 
-<h3>Update:</h2>
+<h3>Update:</h3>
 
 <p>As Miles Sabin points out, the abstractions I devoloped for Lock are all nested, yet one of the major motivations for Lock was non-nested locking disciplines like hand-over-hand locking and lock downgrading. I didn't want to neglect these use cases when I wrote my Lock trait, which is why the lock and unlock primitives are still available instead of buried as private methods. However, the majority of uses of Lock are probably nested, so in the spirit of making easy things easy and hard things possible, I thought it would be useful to provide nested access to Locks, as well as access to the non-nested lock and unlock primitives.</p>
         <div id="byline">&#8212; Jorge Ortiz</div>
@@ -257,5 +259,15 @@
 
       </div>
   </div>
+  <script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+  <script type="text/javascript">
+    try {
+    var pageTracker = _gat._getTracker("UA-1148213-7");
+    pageTracker._trackPageview();
+    } catch(err) {}
+  </script>
 </body>
 </html>
